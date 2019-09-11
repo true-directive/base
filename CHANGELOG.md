@@ -22,3 +22,9 @@
 ### Added
 
 - FilterOperator.EMPTY and FilterOperator.NOT_EMPTY.
+
+## [1.0.30] - 2019-09-11
+
+### Changed
+
+- @true-directive/base sources relocated to its own repository.

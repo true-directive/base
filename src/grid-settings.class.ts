@@ -10,7 +10,7 @@ import { Column } from './column.class';
 import { GridAppearance } from './grid-appearance.class';
 
 /**
- * Настройки грида.
+ * Grid settings
  */
 export class GridSettings {
 

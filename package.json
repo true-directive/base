@@ -1,10 +1,11 @@
 {
   "name": "@true-directive/base",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "The set of base classes for TrueDirective Grid",
   "main": "./bundles/true-directive-base.umd.js",
   "scripts": {
     "test": "karma start",
+    "test-ci": "karma start --singleRun --browsers ChromeHeadless",
     "clean": "rimraf dist",
     "build:umd": "webpack --mode production",
     "build:es2015": "tsc -m es2015 --outDir dist/es",
@@ -16,9 +17,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/true-directive/true-grid"
+    "url": "https://github.com/true-directive/base"
   },
-  "author": "Aleksey Melnikov <alx@truedirective.com>",
+  "author": "Aleksey Melnikov <m_alx@list.ru>",
   "license": "MIT",
   "module": "./es/public_api.js",
   "typings": "./es/public_api.d.ts",
@@ -37,9 +38,11 @@
     "karma-chrome-launcher": "~2.2.0",
     "karma-coverage": "^1.1.1",
     "karma-coverage-istanbul-reporter": "~2.0.1",
+    "karma-coveralls": "^2.1.0",
     "karma-firefox-launcher": "^1.0.1",
     "karma-jasmine": "~1.1.2",
     "karma-jasmine-html-reporter": "^0.2.2",
+    "karma-mocha-reporter": "^2.2.5",
     "karma-remap-coverage": "~0.1.4",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^2.0.3",
@@ -48,7 +51,7 @@
     "ts-helpers": "1.1.2",
     "tslint": "^5.4.3",
     "tslint-loader": "^3.5.3",
-    "typescript": "^3.4.3",
+    "typescript": "^3.2.2",
     "uglifyjs-webpack-plugin": "^2.1.2",
     "webpack": "^4.0.0",
     "webpack-cli": "^3.3.0"
