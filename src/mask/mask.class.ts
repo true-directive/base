@@ -492,6 +492,14 @@ export class Mask {
     return null;
   }
 
+  public static maskWithPattern(intl: Internationalization, pattern: string): Mask {
+    const mask = new Mask();
+    mask.setLocale(intl.locale);
+    mask.pattern = pattern;
+    return mask;
+  }
+
+
   public setLocale(locale: Locale) {
 
     // Форматы

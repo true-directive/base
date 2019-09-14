@@ -235,3 +235,24 @@ describe(`Преобразование из одного шаблона в др�
   it(`Значение для новой маски`, () => expect(mask2.applyPureValue('34')).toBe('34_ ______ _____'));
 
 });
+
+describe(`Создание маски по шаблону`, () => {
+  let intl = new Internationalization();
+  const mask1 = Mask.maskWithPattern(intl, 'NN.NN.NNNN');
+  it(`Шаблон NN.NN.NNNN`, () => expect(mask1.pattern).toBe('NN.NN.NNNN'));
+});
+
+describe(`Применение клавиши к пустому шаблону: `, () => {
+  let intl = new Internationalization();
+  let mask = Mask.maskWithPattern(intl, '');
+  mask.pattern = '';
+
+  let res = mask.applyKeyAtPos('', 0, 'A', 0, 0);
+  it(`Должно быть null`, () => expect(res).toBe(null));
+});
+
+describe(`Шаблоны из текущей локализации: `, () => {
+  const intl = new Internationalization(); 
+  const locale = intl.locale;
+  it(`[date]`, () => expect(Mask.maskWithPattern(intl, 'date').sections.length).toBe(3));
+});
