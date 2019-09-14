@@ -1,20 +1,24 @@
-// Copyright (C) 2018 Aleksey Melnikov
-// This project is licensed under the terms of the MIT license.
-
+/**
+ * Copyright (c) 2018-2019 Aleksey Melnikov, True Directive Company.
+ * @link https://truedirective.com/
+ * @license MIT
+*/
 import { NumberParserFormatter } from '../src/numbers/number-parser-formatter.class';
 import { Keys } from '../src/common/keys.class';
-const intStr = '2019';
-const intFmt = '{0-4}';
 
-const testStr1 = '$123,456,789.01';
-const testStr2 = '-1.2345e+6';
-const testStr3 = '123 456,78 РУБ';
-const testStr4 = '12,345.00';
+let intStr = '2019';
+let intFmt = '{0-4}';
 
-const testFmt1 = '${1.2}';
-const testFmt2 = '';
-const testFmt3 = '{1.2} РУБ';
-const testFmt4 = '{1.2}';
+let testStr1 = '$123,456,789.01';
+let testStr2 = '-1.2345e+6';
+let testStr3 = '123 456,78 РУБ';
+let testStr4 = '12,345.00';
+
+let testFmt1 = '${1.2}';
+let testFmt2 = '';
+let testFmt3 = '{1.2} РУБ';
+let testFmt4 = '{1.2}';
+
 
 describe(`Parse integer value ` + intStr, () => {
   let v = NumberParserFormatter.parse(intStr, intFmt, ['.',',']);
@@ -26,7 +30,9 @@ describe(`Format integer value ` + intStr, () => {
   it(`Value = 2019'`, () => expect(v).toBe('2019'));
 });
 
+
 describe(`Parse ` + testStr1, () => {
+
   let v = NumberParserFormatter.parse(testStr1, testFmt1, ['.',',']);
   it(`Value = 123,456,789.01'`, () => expect(v).toBe(123456789.01));
 });
@@ -98,11 +104,44 @@ describe(`Reformat ` + testStr1, () => {
   it(s + ` with {n1.2} = '-123,456,789.25'`, () => expect(state.value).toBe('-123,456,789.25'));
 });
 
-describe(`Reformat ` + testStr1, () => {
-  let s = '-123456789.25';
-  let state: any = NumberParserFormatter.reformat(s, '{n1.2}', ['.',','], 0, 0);
-  it(s + ` with {n1.2} = '1,123,123,123,123.25'`, () => expect(state.value).toBe('-123,456,789.25'));
+describe(`Reformat -1 (convertToFormat=true)` , () => {
+  let s = '-1';
+  let state: any = NumberParserFormatter.reformat(s, '{n1.2}', ['.',','], 0, 0, true);
+  it(s + ` with {n1.2} = '-1.00'`, () => expect(state.value).toBe('-1.00'));
 });
+
+describe(`Reformat 1`, () => {
+  let s = '1';
+  let state: any = NumberParserFormatter.reformat(s, '{n4.2}', ['.',','], 0, 0, true);
+  it(s + ` with {n4.2} = '0001.00'`, () => expect(state.value).toBe('0001.00'));
+});
+
+describe(`Reformat .01`, () => {
+  let s = '.01';
+  let state: any = NumberParserFormatter.reformat(s, '{n1.2}', ['.',','], 0, 0, false);
+  it(s + ` with {n1.2} = '0.01'`, () => expect(state.value).toBe('0.01'));
+});
+
+describe(`Reformat 001.01 = 1.01`, () => {
+  let s = '001.01';
+  let state: any = NumberParserFormatter.reformat(s, '{n1.2}', ['.',','], 3, 6, false);
+  it(`value = '1.01'`, () => expect(state.value).toBe('1.01'));
+  it(`selStart = 1`, () => expect(state.selStart).toBe(1));
+  it(`selEnd = 3`, () => expect(state.selEnd).toBe(4));
+});
+
+describe(`Reformat ''`, () => {
+  let s = '';
+  let state: any = NumberParserFormatter.reformat(s, '{n1.2}', ['.',','], 0, 0, false);
+  it(`value = ''`, () => expect(state.value).toBe(''));
+});
+
+/*
+describe(`Reformat 123000`, () => {
+  let s = '123000';
+  let state: any = NumberParserFormatter.reformat(s, '{e1.2}', ['.',','], 0, 0, true);
+  it(s + ` with {e1.2} = '1.23e5'`, () => expect(state.value).toBe('0001.00'));
+});*/
 
 describe(`Reformat after backspace: ` + testStr1, () => {
   let s = '1,312,312,311,231,23.00';
@@ -117,32 +156,58 @@ describe(`Reformat after decimal point insert `, () => {
   it(s + ` with {n1.2-4} = '12,312.3123'`, () => expect(state.value).toBe('12,312.3123'));
 });
 
-describe(`Can accept decimal point if it already exists`, () => {
-  let s = '123.4';
-  let res: boolean = NumberParserFormatter.canAcceptKey(s, -1, '.', '{N1-4.1}', ['.',','], 1, 1);
-  it('Result must be falsy', () => expect(res).toBeFalsy());
-});
+describe(`Can accept key`, () => {
+  let s = '123';
+  let state: any;
+  if (NumberParserFormatter.canAcceptKey(s, null, '.', '{1-4.2}', ['.',','], 2))
+    state = NumberParserFormatter.reformat(s + '.', '{1-4}', ['.',','], 0, 0);
+  it(s + ` Append decimal point at the end of '123'. Result should be '123.'.`, () => expect(state.value).toBe('123.'));
 
-describe(`Can accept digit in postfix`, () => {
-  let s = '123.4 kg';
-  let res: boolean = NumberParserFormatter.canAcceptKey(s, -1, '1', '{N1-4.1} kg', ['.',','], 8, 8);
-  it('Result must be falsy', () => expect(res).toBeFalsy());
-});
+  s = '123.0';
+  let res = NumberParserFormatter.canAcceptKey(s, null, '.', '{1-4.2}', ['.',','], s.length);
+  it(s + ` Can't append decimal point at the end of '123.0'`, () => expect(res).toBeFalsy());
 
-describe(`Can accept DELETE in postfix`, () => {
-  let s = '123.4 kg';
-  let res: boolean = NumberParserFormatter.canAcceptKey(s, Keys.DELETE, '', '{N1-4.1} kg', ['.',','], 8, 8);
-  it('Result must be falsy', () => expect(res).toBeFalsy());
-});
+  s = '123.00';
+  let res2 = NumberParserFormatter.canAcceptKey(s, null, '0', '{1-4.2}', ['.',','], s.length);
+  it(s + ` Can't append 0 at the end of '123.00'`, () => expect(res2).toBeFalsy());
 
-describe(`Can accept BACKSPACE in postfix`, () => {
-  let s = '123.4 kg';
-  let res: boolean = NumberParserFormatter.canAcceptKey(s, Keys.BACKSPACE, '', '{N1-4.1} kg', ['.',','], 8, 8);
-  it('Result must be falsy', () => expect(res).toBeFalsy());
-});
+  s = '1230';
+  let res3 = NumberParserFormatter.canAcceptKey(s, null, '0', '{1-4.2}', ['.',','], 4);
+  it(s + ` Can't append number at the end of '1230' with format {1-4.2}`, () => expect(res3).toBeFalsy());
 
-describe(`Can accept BACKSPACE in number`, () => {
-  let s = '123.4 kg';
-  let res: boolean = NumberParserFormatter.canAcceptKey(s, Keys.BACKSPACE, '', '{N1-4.1} kg', ['.',','], 5, 5);
-  it('Result must be truthy', () => expect(res).toBeTruthy());
+  s = '-1';
+  let res4 = NumberParserFormatter.canAcceptKey(s, null, '0', '{1-4.2}', ['.',','], 0);
+  it(s + ` Can't insert number before minus`, () => expect(res4).toBeFalsy());
+
+  s = '$1';
+  let res5 = NumberParserFormatter.canAcceptKey(s, null, '0', '${1-4.2}', ['.',','], 0);
+  it(s + ` Can't insert number before prefix`, () => expect(res5).toBeFalsy());
+
+  s = '1 kg';
+  let res6 = NumberParserFormatter.canAcceptKey(s, null, '0', '{1-4.2} kg', ['.',','], 4);
+  it(s + ` Can't append number after postfix`, () => expect(res6).toBeFalsy());
+
+  s = '1.0';
+  let res7 = NumberParserFormatter.canAcceptKey(s, null, '.', '{1-4.2} kg', ['.',','], 1);
+  it(s + ` Can replace decimal separator`, () => expect(res7).toBeTruthy());
+
+  s = '1e1';
+  let res8 = NumberParserFormatter.canAcceptKey(s, null, 'e', '{e1-4.2} kg', ['.',','], 1);
+  it(s + ` Can replace e`, () => expect(res8).toBeTruthy());
+
+  s = '1e1';
+  let res9 = NumberParserFormatter.canAcceptKey(s, null, '+', '{e1-4.2} kg', ['.',','], 2);
+  it(s + ` Can accept '+' after e`, () => expect(res9).toBeTruthy());
+
+  s = '$1';
+  let res10 = NumberParserFormatter.canAcceptKey(s, null, '+', '${n1-4.2}', ['.',','], 1);
+  it(s + ` Can accept signum before number`, () => expect(res10).toBeTruthy());
+
+  s = '$1';
+  let res11 = NumberParserFormatter.canAcceptKey(s, Keys.BACKSPACE, '', '${n1-4.2}', ['.',','], 2);
+  it(s + ` Can accept backspace`, () => expect(res11).toBeTruthy());
+
+  s = '$1.2';
+  let res12 = NumberParserFormatter.canAcceptKey(s, Keys.BACKSPACE, '', '${n1-4.2}', ['.',','], 3, 3, true);
+  it(s + ` Can't delete decimal point if convertToFormat = true`, () => expect(res12).toBeFalsy()); 
 });

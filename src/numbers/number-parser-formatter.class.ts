@@ -33,7 +33,7 @@ export class NumberParserFormatter {
     }
 
     return {
-      prefix: prefix,
+      prefix: prefix, 
       number: number,
       postfix: postfix
     };
@@ -376,7 +376,7 @@ export class NumberParserFormatter {
 
     if (convertToFormat && fmt !== null && (number.signum !== '' || number.int !== '' || number.fraction !== '')) {
       while (number.int.length < fmt.intMin) {
-        number.int = '0' + number.in5;
+        number.int = '0' + number.int;
         newSelEnd++;
       }
     }
