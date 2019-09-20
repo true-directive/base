@@ -28,6 +28,8 @@ export { MaskSettings } from './src/mask/mask-settings.class';
 export { MaskState } from './src/mask/mask-state.class';
 export { MaskValue } from './src/mask/mask-value.class';
 
+export { MenuAction } from './src/menu-action.class';
+
 export * from './src/enums';
 export * from './src/events';
 

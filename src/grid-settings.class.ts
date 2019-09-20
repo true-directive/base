@@ -7,10 +7,11 @@ import { RenderMode, DetectionMode, SelectionMode, EditorShowMode,
          ColumnType } from './enums';
 
 import { Column } from './column.class';
+import { MenuAction } from './menu-action.class';
 import { GridAppearance } from './grid-appearance.class';
 
 /**
- * Grid settings
+ * Настройки грида.
  */
 export class GridSettings {
 
@@ -212,6 +213,14 @@ export class GridSettings {
    * will lead to subjectively worse perceptual performance.
    */
   public searchDelay = 350;
+
+  public dataContextMenuActions: MenuAction[] = [];
+
+  public headerContextMenuActions: MenuAction[] = [
+    MenuAction.SORT_ASC,
+    MenuAction.SORT_DESC,
+    MenuAction.HIDE
+  ];
 
   /**
    * Is row's height fixed?

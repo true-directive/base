@@ -7,11 +7,16 @@ import { GridPart } from './enums';
 import { Column } from './column.class';
 import { ColumnBand } from './column-band.class';
 import { GridLayoutSelection } from './grid-layout-selection.class';
+import { UIAction } from './ui-action.class';
+import { ColumnCollection } from './column-collection.class';
 
-// Разметка секции грида.
-// Содержит колонки только своей секции
-// Пересчитывает их ширину
-// Содержит информацию о выделенных областях своей секции
+/**
+ * Разметка секции грида.
+ * Содержит колонки только своей секции
+ * Пересчитывает их ширину
+ * Содержит информацию о выделенных областях своей секции
+ * @return [description]
+ */
 export class GridLayout {
 
   // Уровни группировки генерируются вместе с первой видимой колонкой, но не
@@ -78,7 +83,8 @@ export class GridLayout {
     const lc: Column[] = [];
 
     if (maxLevel > 0) {
-      lc.push(new Column('_', '', this._levelIndent)); // Для стрелки
+      // Для стрелки
+      lc.push(new Column('_', '', this._levelIndent));
     }
 
     for (let i = 0; i < maxLevel; i++) {
@@ -245,7 +251,7 @@ export class GridLayout {
       if (min === undefined || c.autoWidthPriority < min) {
         min = c.autoWidthPriority;
       }
-    });
+    }); 
 
     if (min === undefined) {
       return false;
@@ -371,6 +377,159 @@ export class GridLayout {
     }
 
     this.totalWidth = newTotalWidth;
+  }
+
+  /**
+   * Is it possible to reorder the column at the specified coordinates?
+   * @param  mouseAction User action info with mouse coordinates
+   * @param  items       List of column headers or bands
+   * @param  r0          Header bounding rectangle
+   * @param  hasL        We have part positioned to left of this part
+   * @param  hasR        We have part positioned to right of this part
+   * @param  columns     Columns collection of the grid
+   * @return             Possibility of reordering, position
+   */
+  public canDrop(mouseAction: UIAction, items: any[], r0: DOMRect, hasL: boolean, hasR: boolean, columns: ColumnCollection): any {
+
+    let result = null;
+    const tg = mouseAction.target;
+
+    if (mouseAction.y < r0.top) {
+      return result;
+    }
+
+    const isColumn = tg instanceof Column;
+    const isBand = tg instanceof ColumnBand;
+
+    if (mouseAction.y < r0.top) {
+      return result;
+    }
+
+    if (items.length === 0 && mouseAction.x >= r0.left && mouseAction.x < r0.right) {
+      return { inColumns: isColumn, item: null, pos: 'left', place: this.place };
+    }
+
+    let mrX = 0;
+    let cbCol = columns.prevCheckbox(tg);
+    // Необходимо перебрать колонки и понять, сможем ли мы бросить сюда наш заголовок.
+    for (let i=0; i < items.length; i++) {
+
+      const isFirst = i === 0;
+      const isLast = i === items.length - 1;
+
+      let rr = items[i].boundingRect;
+      let item = items[i].item;
+
+      if (mouseAction.inItemRect(r0, rr)) {
+
+        // проверяем, можно ли вставить колонку сюда..
+        let canDropLeft = true;
+        let canDropRight = true;
+
+        if (isColumn && tg.fieldName === item.fieldName) {
+          // Навели на себя же
+          canDropLeft = false;
+          canDropRight = false;
+        }
+
+        if (cbCol && cbCol.fieldName === item.fieldName) {
+          // Навели на чекбокс, который прилеплен к перетаскиваемой колонке
+          canDropLeft = false;
+          canDropRight = false;
+        }
+
+        if (item.isCheckbox && i < items.length - 1)
+          canDropRight = false; // между чекбоксом и норм столбцом не вклиниваемся
+
+        // Не самый первый элемент
+        if (!isFirst) {
+
+          const prevItem = items[i - 1].item;
+
+          // Простая проверка - для колонки
+          if (isColumn && prevItem.fieldName === tg.fieldName) {
+            canDropLeft = false;
+          }
+
+          if (isColumn && prevItem.isCheckbox) {
+            if (cbCol && cbCol.fieldName === prevItem.fieldName) {
+              canDropLeft = false;
+            }
+          }
+
+          if (isBand && tg.columns[tg.columns.length - 1].fieldName === prevItem.columns[prevItem.columns.length - 1].fieldName) {
+            canDropLeft = false;
+          }
+        }
+
+        // Бэнд
+        if (isBand) {
+          // Нельзя бросить бэнд слева от себя
+          if (tg.columns[0].fieldName === item.columns[0].fieldName) {
+            canDropLeft = false;
+          }
+
+          // Нельзя бросить справа от себя
+          if (tg.columns[tg.columns.length - 1].fieldName === item.columns[item.columns.length - 1].fieldName) {
+            canDropRight = false;
+          }
+
+          //
+          if (tg.columns[0].fieldName === item.columns[item.columns.length - 1].fieldName) {
+            canDropRight = false;
+          }
+
+          if (tg.columns[tg.columns.length - 1].fieldName === item.columns[0].fieldName) {
+            canDropLeft = false;
+          }
+        }
+
+        // Не последний элемент
+        if (!isLast) {
+
+          const nextItem = items[i + 1].item;
+          if (isColumn && nextItem.fieldName === tg.fieldName) {
+            canDropRight = false;
+          }
+
+          if (isBand && tg.columns[0].fieldName === nextItem.columns[0].fieldName) {
+            canDropRight = false;
+          }
+
+          if (isColumn && nextItem.isCheckbox) {
+            if (cbCol && cbCol.fieldName === nextItem.fieldName) {
+              canDropRight = false;
+            }
+          }
+        }
+
+        // Если мы вписываемся в наш компонент, то показываем сразу..
+        // Иначе нам нужно скрыть и немного проскроллить..
+        let showMarker = false;
+
+        if ((mouseAction.x - rr.left < rr.width / 2 || item.isCheckbox) && canDropLeft) {
+
+          if (i > 0 && items[i - 1].item.isCheckbox) {
+            // Колонка с чекбоксом неразделимы
+            item = items[i - 1].item;
+            rr =  items[i - 1].boundingRect;
+          }
+
+          mrX = rr.left - 1;
+          showMarker = true;
+          result = { inColumns: isColumn, item: item, pos: 'left' };
+        } else
+          if (mouseAction.x - rr.left >= rr.width / 2 && canDropRight) {
+            mrX = rr.right - 1;
+            showMarker = true;
+            result = { inColumns: isColumn, item: item, pos: 'right' };
+          }
+
+        return result;
+      }
+    }
+
+    return result;
   }
 
   constructor(public place: GridPart) { }

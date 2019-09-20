@@ -35,6 +35,12 @@ export class UIAction {
     return false;
   }
 
+  public inItemRect(rect: any, itemRect: any): boolean {
+    let xx = this.x;
+    let yy = this.y;
+    return (xx >= rect.left) && (xx <= rect.right) && (xx >= itemRect.left) && (xx <= itemRect.right);
+  }
+
   constructor(
     public action: UIActionType,
     public target: any,

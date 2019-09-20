@@ -357,7 +357,7 @@ export abstract class GridState {
 
   public checkClientHeight(v: number): boolean {
     let res = false;
-    if (this._clientHeight < v) {
+    if (this._clientHeight != v) {
       res = true;
     }
     this._clientHeight = v;
@@ -574,6 +574,12 @@ export abstract class GridState {
   // Изменение ширины колонки
   public resizeColumn(col: Column, newWidth: number) {
     col.width = newWidth;
+    this.updateLayouts();
+    this.columnsChangedEvent();
+  }
+
+  public hideColumn(col: Column) {
+    col.visible = false;
     this.updateLayouts();
     this.columnsChangedEvent();
   }
@@ -1220,6 +1226,11 @@ export abstract class GridState {
     });
   }
 
+  // -- HEADER CONTEXT MENU ----------------------------------------------------
+  public headerContextMenu(e: any, column: Column) {
+    this.headerContextMenuEvent(e, column);
+  }
+
   // -- SUMMARIES --------------------------------------------------------------
   public updateSummaries() {
     this.dataSource.summaries(this.columns);
@@ -1245,6 +1256,11 @@ export abstract class GridState {
     this.dataSource.moveRows(draggedRows, dropTarget, dropPos, this.settings);
     this.updateData();
   }
+
+  protected headerContextMenuEvent(e: any, column: Column) {
+    // Not implemented
+  }
+
 
   // -- EVENTS -----------------------------------------------------------------
   protected abstract dataQueryEvent(query: DataQuery): void;

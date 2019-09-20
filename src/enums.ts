@@ -3,6 +3,7 @@
  * @link https://truedirective.com/
  * @license MIT
 */
+
 /**
  * Тип данных
  */

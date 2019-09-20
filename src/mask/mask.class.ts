@@ -499,7 +499,6 @@ export class Mask {
     return mask;
   }
 
-
   public setLocale(locale: Locale) {
 
     // Форматы

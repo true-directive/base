@@ -28,3 +28,20 @@
 ### Changed
 
 - @true-directive/base sources relocated to its own repository.
+
+## [1.0.31] - 2019-09-14
+
+### Fixed
+
+- Formatting numbers with leading zeros {N4.2}.
+
+### Added
+
+- Coveralls badge.
+
+## [1.1.0] - 2019-09-20
+
+### Added
+
+- MenuAction class.
+- GridState.HeaderContextMenu event.
