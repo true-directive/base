@@ -56,8 +56,7 @@ module.exports = function (config) {
     webpack: require('./webpack.test.js'),
 
     coverageReporter: {
-      type: 'in-memory'
-      //dir: 'coverage/'
+      type: 'in-memory'      
     },
 
     remapCoverageReporter: {

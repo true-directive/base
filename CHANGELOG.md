@@ -45,3 +45,10 @@
 
 - MenuAction class.
 - GridState.HeaderContextMenu event.
+
+## [1.2.0] - 2019-09-23
+
+### Added
+
+- enableDataContextMenu and enabledHeaderContextMenu settings (turned off by default).
+- GridState.isSelected(cp) method to get if a given cell is selected.
