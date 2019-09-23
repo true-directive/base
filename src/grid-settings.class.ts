@@ -206,7 +206,6 @@ export class GridSettings {
    */
   public searchHighlight = true;
 
-
   /**
    * Number of milliseconds between user input of search string and data
    * processing. If value set is too low, refresh will occur too often, which
@@ -214,13 +213,18 @@ export class GridSettings {
    */
   public searchDelay = 350;
 
-  public dataContextMenuActions: MenuAction[] = [];
+  public dataContextMenuActions: MenuAction[] = [
+    MenuAction.CUSTOM
+  ];
 
   public headerContextMenuActions: MenuAction[] = [
     MenuAction.SORT_ASC,
     MenuAction.SORT_DESC,
     MenuAction.HIDE
   ];
+
+  public enableDataContextMenu = false;
+  public enableHeaderContextMenu = false;
 
   /**
    * Is row's height fixed?
@@ -317,6 +321,9 @@ export class GridSettings {
         if (col.isBoolean) {
           // Булеваые значения по центру
           res = 'true-align-center true-cell-boolean';
+          if (this.checkByCellClick) {
+            res += ' true-check-by-click';
+          }
         }
       }
     }
