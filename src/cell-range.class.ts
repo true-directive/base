@@ -8,12 +8,47 @@ import { SelectionMode } from './enums';
 
 /**
  * Range of cells
- * Прямоугольная область в таблице. Определяется полями:
- *  - fromCell: CellPosition  - начальная ячейка
- *  - toCell: CellPosition - конечная ячейка
+ * Rectangular area in the grid. Defined by:
+ *  - fromCell: CellPosition  - starting cell.
+ *  - toCell: CellPosition - end cell.
  */
 export class CellRange {
+
   public toCell: CellPosition = null;
+
+  /**
+   * Always lower row index
+   */
+  public get fromRow() {
+    if (this.toCell !== null && this.toCell.rowIndex < this.fromCell.rowIndex) {
+      return this.toCell.rowIndex;
+    }
+    return this.fromCell.rowIndex;
+  }
+
+    /**
+     * Always higher row index
+     */
+  public get toRow() {
+    if (this.toCell !== null && this.toCell.rowIndex < this.fromCell.rowIndex) {
+      return this.fromCell.rowIndex;
+    }
+
+    return this.toCell !== null ? this.toCell.rowIndex : this.fromCell.rowIndex;
+  }
+
+  // Column indices are unknown
+  public get fromField(): string {
+    return this.fromCell.fieldName;
+  }
+
+  // Column indices are unknown
+  public get toField(): string {
+    if (this.toCell === null) {
+      return this.fromCell.fieldName;
+    }
+    return this.toCell.fieldName;
+  }
 
   public equals(range: CellRange, sm: SelectionMode): boolean {
     if (sm === SelectionMode.ROW || sm === SelectionMode.ROW_AND_RANGE) {
@@ -55,6 +90,11 @@ export class CellRange {
     return res;
   }
 
+  /**
+   * Extends range to a given cell position.
+   * @param  pos Cell position.
+   * @return     Is range changed.
+   */
   public extend(pos: CellPosition): boolean {
 
     if (pos.fieldName === this.fromCell.fieldName &&
@@ -85,7 +125,7 @@ export class CellRange {
       return true;
     }
 
-    // Не поменялось
+    // Not changed
     return false;
   }
 

@@ -32,7 +32,11 @@ export class ColumnCollection {
     return '';
   }
 
-  // Получение колонки по наименованию поля
+  /**
+   * Getting a column by field name.
+   * @param  fieldName Name of column field.
+   * @return           Column if found.
+   */
   public columnByFieldName(fieldName: string): Column {
     for (let i = 0; i < this.columns.length; i++) {
       const col = this.columns[i];

@@ -695,6 +695,11 @@ export abstract class GridState {
     }
 
     const col: Column = this.columnByFieldName(cp.fieldName);
+
+    if (col.isCheckbox) {
+      return false;
+    }
+
     return this.st.canEditColumnCell(col);
   }
 
@@ -739,7 +744,7 @@ export abstract class GridState {
    * @param  cp          Позиция
    * @return             Если true, то событие обработано, дальнейшая обработка не требуется
    */
-  public mouseDown(cp: CellPosition, touch: boolean = false): boolean {
+  public mouseDown(cp: CellPosition, touch: boolean = false, button: number = 0): boolean {
 
     // Если планируется переключение чекбокса, то выходим из процедуры
     if (this.st.checkByCellClick && this.canToggleCheck(cp)) {
@@ -857,7 +862,7 @@ export abstract class GridState {
   }
 
   // Пользователь начинает выделять ячейки - MouseDown
-  public startAction(cp: CellPosition, ctrl: boolean = false, byTouch: boolean = false): UIActionType {
+  public startAction(cp: CellPosition, ctrl: boolean = false, byTouch: boolean = false, button: number = 0): UIActionType {
 
     if (this.focusedCell != null &&
         this.focusedCell.equals(cp) &&
@@ -871,6 +876,13 @@ export abstract class GridState {
 
     if (!cp || cp.fieldName === '') {
       // Не попали в ячейку
+      return null;
+    }
+
+    if (button === 2 && this.isSelected(cp)) {
+      // Контекстное меню лучше вызовем
+      this.selection.focusedCell = cp;
+      this.selectionChanged(cp);
       return null;
     }
 
@@ -966,28 +978,43 @@ export abstract class GridState {
   }
 
   public isSelected(pos: CellPosition): boolean {
+
+    if (!pos || pos.rowIndex < 0) {
+      return false;
+    }
+
+    const ii = this.columnIndex(pos.fieldName);
     for (const range of this.selection.ranges) {
 
-      let fromIndex = this.columnIndex(range.fromCell.fieldName);
-      let toIndex = -1;
-
-      if (range.toCell) {
-        toIndex = this.columnIndex(range.toCell.fieldName);
+      if (pos.rowIndex < range.fromRow) {
+        continue;
       }
 
-      if (toIndex >= 0 && toIndex < fromIndex) {
-        const t = toIndex; toIndex = fromIndex; fromIndex = t;
+      if (pos.rowIndex > range.toRow) {
+        continue;
       }
 
-      if (toIndex === -1) {
-        // С этим надо что-то делать
-        if (this.st.selectionMode !== SelectionMode.ROW &&
-            this.st.selectionMode !== SelectionMode.ROW_AND_RANGE) {
-             range.toCell = range.fromCell;
-             toIndex = fromIndex;
+      let i1 = this.columnIndex(range.fromField);
+      let i2 = this.columnIndex(range.toField);
+
+      if (range.fromRow === range.toRow && i1 === i2) {
+        // Одна ячейка
+        if (this.st.selectionMode === SelectionMode.ROW ||
+            this.st.selectionMode === SelectionMode.ROW_AND_RANGE) {
+          // Значит выделена вся строка
+          return true;
         }
       }
+
+      if (i2 < i1) {
+        const t = i1; i1 = i2; i2 = t;
+      }
+
+      if (ii >= i1 && ii <= i2) {
+        return true;
+      }
     }
+
     return false;
   }
 
@@ -1180,16 +1207,28 @@ export abstract class GridState {
 
   // -- CHECKBOXES -------------------------------------------------------------
   // Пользователь переключает галку в группе или строке
-  public toggleCheck(row: any, fieldName: string) {
+  public toggleCheck(row: any, fieldName: string, v: boolean = undefined) {
     const col: Column = this.columnCollection.columnByFieldName(fieldName);
     if (col && col.type !== ColumnType.CHECKBOX) {
       this.commitEditor(row, fieldName, !row[fieldName]);
       return;
     }
-    row[fieldName] = !row[fieldName];
-    this.updateCheckColumns(fieldName);
-    // Сигнализируем о том, что нужно проверить изменения
-    this.valueChangedEvent(new ValueChangedEvent(row, fieldName));
+
+    if (v !== undefined) {
+      console.log('>', v);
+      if (row[fieldName] !== v) {
+        console.log('>>', v);
+        row[fieldName] = v;
+        this.updateCheckColumns(fieldName);
+        // Сигнализируем о том, что нужно проверить изменения
+        this.valueChangedEvent(new ValueChangedEvent(row, fieldName));
+      }
+    } else {
+      row[fieldName] = !row[fieldName];
+      this.updateCheckColumns(fieldName);
+      // Сигнализируем о том, что нужно проверить изменения
+      this.valueChangedEvent(new ValueChangedEvent(row, fieldName));
+    }
   }
 
   // Пользователь переключает галку в заголовке столбца
