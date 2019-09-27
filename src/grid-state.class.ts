@@ -709,7 +709,7 @@ export abstract class GridState {
    * @param  cp Позиция ячейки
    * @return    Можно переключить или нельзя
    */
-  private canToggleCheck(cp: CellPosition): boolean {
+  public canToggleCheck(cp: CellPosition): boolean {
 
     if (!cp) {
       return false;
@@ -723,20 +723,6 @@ export abstract class GridState {
 
     // Не. Нечего переключать
     return false;
-  }
-
-  /**
-   * Обработка события touchstart. Переключение чекбокса.
-   * @param  cp         Позиция ячейки
-   * @return            True - событие обработано, дальнейшая обработка не нужна.
-   */
-  public touchStart(cp: CellPosition): boolean {
-    // Переключение чекбокса по параметру
-    if (this.st.checkByCellClick && this.canToggleCheck(cp)) {
-      this.toggleCheck(cp.row, cp.fieldName);
-      // Не начинаем выделение, если даже пока не переключаем чекбокс
-      return true;
-    }
   }
 
   /**
@@ -1215,9 +1201,7 @@ export abstract class GridState {
     }
 
     if (v !== undefined) {
-      console.log('>', v);
-      if (row[fieldName] !== v) {
-        console.log('>>', v);
+      if (row[fieldName] !== v) {        
         row[fieldName] = v;
         this.updateCheckColumns(fieldName);
         // Сигнализируем о том, что нужно проверить изменения
