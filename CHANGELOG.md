@@ -52,3 +52,10 @@
 
 - enableDataContextMenu and enabledHeaderContextMenu settings (turned off by default).
 - GridState.isSelected(cp) method to get if a given cell is selected.
+
+## [1.2.1] - 2019-09-27
+
+### Fixed
+
+- Summary text translates.
+- Toggle checkboxes in touchend events instead of touchstart.
