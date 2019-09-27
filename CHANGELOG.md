@@ -59,3 +59,9 @@
 
 - Summary text translates.
 - Toggle checkboxes in touchend events instead of touchstart.
+
+## [1.2.2] - 2019-09-27
+
+### Fixed
+
+- Mask regular expressions.
