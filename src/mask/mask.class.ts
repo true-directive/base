@@ -45,16 +45,16 @@ export class Mask {
     { selectors: ['b'], numeric: true, min: 0, max: 255 },
 
     // Plus/minus
-    { selectors: ['~'], numeric: false, regExp: new RegExp('[-+]') },
+    { selectors: ['~'], numeric: false, regExp: /[-+]/ },
 
     // Letter or digit
-    { selectors: ['*'], numeric: false, regExp: new RegExp('[\d\w]') },
+    { selectors: ['*'], numeric: false, regExp: /[\d\w]/ },
 
     // Letters
-    { selectors: ['l', 'L'], numeric: false, regExp: new RegExp('\w') },
+    { selectors: ['l', 'L'], numeric: false, regExp: /\w/ },
 
     // Digits
-    { selectors: ['n', 'N'], numeric: false, regExp: new RegExp('\d') },
+    { selectors: ['n', 'N'], numeric: false, regExp: /\d/ },
 
   ];
 
