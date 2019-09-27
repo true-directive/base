@@ -4,12 +4,12 @@
  * @license MIT
 */
 export class SummaryType {
-  static SUM = new SummaryType('Sum', 'Sum');
-  static MIN = new SummaryType('Minimum', 'Min');
-  static MAX = new SummaryType('Maximum', 'Max');
-  static COUNT = new SummaryType('Count', 'Count');
-  static AVERAGE = new SummaryType('Average', 'Avg');
-  constructor(public name: string, public shortName: string) { }
+  static SUM = new SummaryType('Sum', 'Sum', 'SUM');
+  static MIN = new SummaryType('Minimum', 'Min', 'MIN');
+  static MAX = new SummaryType('Maximum', 'Max', 'MAX');
+  static COUNT = new SummaryType('Count', 'Count', 'TOTAL');
+  static AVERAGE = new SummaryType('Average', 'Avg', 'AVG');
+  constructor(public name: string, public shortName: string, public footerText: string) { }
 }
 
 export class Summary {
