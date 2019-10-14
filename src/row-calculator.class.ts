@@ -14,6 +14,7 @@ export class RowCalculator {
 
   // Стандартная выста строки
   private _currentRH: number = null;
+  public currentScrollPos: number = 0;
 
   public get currentRH(): number {
     if (this._currentRH === null) {
@@ -49,6 +50,8 @@ export class RowCalculator {
   private GHOST_START = 0; // До отображаемых строк
   private GHOST_END = 0;   // После отображаемых строк
 
+  public TOTAL_HEIGHT = 0;
+
   // Сохраненные фантомные строки. Если позиция прокрутки не изменилась,
   // то используем их
   private _startRows: any[] = [];
@@ -63,6 +66,15 @@ export class RowCalculator {
   private _extraH = -1;
 
   private ghostMaxH = 1000000;
+
+  public firstRowDY(): string {
+    const dy = -(this.currentScrollPos - this.GHOST_START);
+    return `translateY(${dy}px)`;
+  }
+
+  public firstRowY(): string {
+    return `translateY(${this.GHOST_START}px)`;
+  }
 
   /**
    * Список фантомных строк до и после отображаемых строк
@@ -244,6 +256,8 @@ export class RowCalculator {
    */
   protected renderInfo(rc: number, scrollPos: number, viewPortHeight: number, overWork: any): any {
 
+    this.currentScrollPos = scrollPos;
+
     if (scrollPos < 0) {
       scrollPos = 0;
     }
@@ -371,6 +385,7 @@ export class RowCalculator {
       pageChanged = true;
     }
 
+    this.TOTAL_HEIGHT = ri.totalHeight;
     return pageChanged;
   }
 

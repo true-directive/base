@@ -1201,7 +1201,7 @@ export abstract class GridState {
     }
 
     if (v !== undefined) {
-      if (row[fieldName] !== v) {        
+      if (row[fieldName] !== v) {
         row[fieldName] = v;
         this.updateCheckColumns(fieldName);
         // Сигнализируем о том, что нужно проверить изменения
