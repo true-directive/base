@@ -65,3 +65,9 @@
 ### Fixed
 
 - Mask regular expressions.
+
+## [1.2.3] - 2019-10-15
+
+### Added
+
+- Methods for the [translateY]-style virtual scrolling.
