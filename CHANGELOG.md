@@ -71,3 +71,9 @@
 ### Added
 
 - Methods for the [translateY]-style virtual scrolling.
+
+## [1.2.4] - 2019-11-04
+
+### Added
+
+- The delay between search string input and updating reduced (200ms by default).
