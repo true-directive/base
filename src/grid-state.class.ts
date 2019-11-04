@@ -357,7 +357,7 @@ export abstract class GridState {
 
   public checkClientHeight(v: number): boolean {
     let res = false;
-    if (this._clientHeight != v) {
+    if (this._clientHeight !== v) {
       res = true;
     }
     this._clientHeight = v;

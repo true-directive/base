@@ -251,7 +251,7 @@ export class GridLayout {
       if (min === undefined || c.autoWidthPriority < min) {
         min = c.autoWidthPriority;
       }
-    }); 
+    });
 
     if (min === undefined) {
       return false;
@@ -438,8 +438,9 @@ export class GridLayout {
           canDropRight = false;
         }
 
-        if (item.isCheckbox && i < items.length - 1)
+        if (item.isCheckbox && i < items.length - 1)  {
           canDropRight = false; // между чекбоксом и норм столбцом не вклиниваемся
+        }
 
         // Не самый первый элемент
         if (!isFirst) {
