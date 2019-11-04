@@ -218,7 +218,7 @@ export class Column {
   /**
    * Устанавливаем, отмечен ли чекбокс в заголовке колонки
    */
-  public setChecked(v: boolean) {
+  public setChecked(v: boolean) {  
     this._checked = v;
   }
 

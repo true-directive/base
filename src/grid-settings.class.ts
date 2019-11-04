@@ -211,7 +211,7 @@ export class GridSettings {
    * processing. If value set is too low, refresh will occur too often, which
    * will lead to subjectively worse perceptual performance.
    */
-  public searchDelay = 350;
+  public searchDelay = 200;
 
   public dataContextMenuActions: MenuAction[] = [
     MenuAction.CUSTOM
