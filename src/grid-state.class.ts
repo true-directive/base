@@ -267,6 +267,7 @@ export abstract class GridState {
   public IE: boolean = Utils.detectIE();
   public iOS: boolean = Utils.detectIOS();
   public android: boolean = Utils.detectAndroid();
+  public safari: boolean = Utils.detectSafari();
 
   /**
    * Handling of the pressed key before editor Initialization.

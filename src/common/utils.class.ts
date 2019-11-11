@@ -57,6 +57,16 @@ export class Utils {
     return re.test(Utils.userAgent);
   }
 
+  public static detectFirefox(): boolean {
+    return Utils.userAgent.toLowerCase().indexOf('firefox') > -1;
+  }
+
+  public static detectSafari(): boolean {
+    return
+      Utils.userAgent.toLowerCase().indexOf('safari') > -1 &&
+      Utils.userAgent.toLowerCase().indexOf('chrome') <= -1;
+  }
+
   public static detectAndroid(): boolean {
     const re = new RegExp('android', 'i');
     return re.test(Utils.userAgent);
