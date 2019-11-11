@@ -77,3 +77,9 @@
 ### Added
 
 - The delay between search string input and updating reduced (200ms by default).
+
+## [1.2.5] - 2019-11-11
+
+### Added
+
+- Safari browser detection.
