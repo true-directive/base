@@ -83,3 +83,12 @@
 ### Added
 
 - Safari browser detection.
+
+
+## [1.2.7] - 2019-11-15
+
+### Added
+
+- GridState: custom cell event.
+- Utils.IsClassDescendant method.
+- Column: AllowSorting setting.
