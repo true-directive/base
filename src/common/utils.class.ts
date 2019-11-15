@@ -23,6 +23,26 @@ export class Utils {
   }
 
   /**
+   * Is given element has ancestor with given css-class
+   * @param  element Element to check
+   * @param  ancestorClass  class
+   * @return  True if the first element has an ancestor with given class.
+   */
+  public static isClassDescendant(element: any, ancestorClass: string): boolean {
+    if (!element) {
+      return false;
+    }
+    var parent = element;
+    while (parent) {
+      if (parent && parent.classList && parent.classList.contains(ancestorClass)) {
+        return true;
+      }
+      parent = parent.parentNode;
+    }
+    return false;
+  }
+
+  /**
    * Moving item inside the array.
    * @param  arr      Array.
    * @param  oldIndex Old index.
@@ -62,9 +82,9 @@ export class Utils {
   }
 
   public static detectSafari(): boolean {
-    return
-      Utils.userAgent.toLowerCase().indexOf('safari') > -1 &&
-      Utils.userAgent.toLowerCase().indexOf('chrome') <= -1;
+    const safari = Utils.userAgent.toLowerCase().indexOf('safari');
+    const chrome = Utils.userAgent.toLowerCase().indexOf('chrome');
+    return safari > -1 && chrome <= -1;
   }
 
   public static detectAndroid(): boolean {
@@ -80,5 +100,15 @@ export class Utils {
     // Does not include EDGE
     const re = new RegExp('MSIE|Trident', 'i');
     return re.test(Utils.userAgent);
+  }
+
+  /**
+   *  Returns date if it is valid or null if not.
+   */
+  public static purifyDate(v: any): any {
+    if (v === undefined || v === null || isNaN(v.getTime())) {
+      return null;
+    }
+    return v;
   }
 }
