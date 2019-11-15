@@ -1285,6 +1285,14 @@ export abstract class GridState {
     // Not implemented
   }
 
+  // -- CUSTOM CELL EVENTS -----------------------------------------------------
+  public emitCustomCellEvent(e: any) {
+    this.customCellEvent(e);
+  }
+
+  protected customCellEvent(e: any): void {
+    //
+  }
 
   // -- EVENTS -----------------------------------------------------------------
   protected abstract dataQueryEvent(query: DataQuery): void;
@@ -1312,4 +1320,5 @@ export abstract class GridState {
   protected abstract startEditingEvent(cp: CellPosition): void;
 
   protected abstract stopEditingEvent(returnFocus: boolean): void;
+
 }
