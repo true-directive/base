@@ -92,3 +92,9 @@
 - GridState: custom cell event.
 - Utils.IsClassDescendant method.
 - Column: AllowSorting setting.
+
+## [1.2.8] - 2019-11-18
+
+### Added
+
+- CheckedChanged event.
