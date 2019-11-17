@@ -21,11 +21,17 @@ export class CancelableEvent {
  */
 export class CloseEvent extends CancelableEvent {
   confirmed: boolean = false;
-  constructor(
-    public result: any
-  ) {
+  constructor(public result: any) {
     super();
   }
+}
+
+export class CheckedChangedEvent {
+  constructor(
+    public target: 'row' | 'column',
+    public row: any,
+    public fieldName: string,
+    public value?: boolean) { }
 }
 
 export class ValueChangedEvent {

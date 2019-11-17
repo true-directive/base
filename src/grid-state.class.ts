@@ -6,7 +6,7 @@
 import { ColumnType, SelectionMode,
          GridPart, EditorShowMode } from './enums';
 
-import { ValueChangedEvent, FilterShowEvent } from './events';
+import { CheckedChangedEvent, ValueChangedEvent, FilterShowEvent } from './events';
 import { UIAction, UIActionType } from './ui-action.class';
 
 import { DataSource } from './datasource.class';
@@ -718,7 +718,8 @@ export abstract class GridState {
 
     // Определяем колонку
     const col: Column = this.columnCollection.columnByFieldName(cp.fieldName);
-    if (col && (col.isCheckbox || col.isBoolean) && col.allowEdit) {
+    const canEdit = this.settings.editorShowMode !== EditorShowMode.NONE && col.allowEdit;
+    if (col && (col.isCheckbox || (col.isBoolean && canEdit))) {
       return true;
     }
 
@@ -1207,13 +1208,23 @@ export abstract class GridState {
         this.updateCheckColumns(fieldName);
         // Сигнализируем о том, что нужно проверить изменения
         this.valueChangedEvent(new ValueChangedEvent(row, fieldName));
+        this.checkedChangedEvent(new CheckedChangedEvent('row', row, fieldName, v));
       }
     } else {
       row[fieldName] = !row[fieldName];
       this.updateCheckColumns(fieldName);
       // Сигнализируем о том, что нужно проверить изменения
       this.valueChangedEvent(new ValueChangedEvent(row, fieldName));
+      this.checkedChangedEvent(new CheckedChangedEvent('row', row, fieldName, row[fieldName]));
     }
+  }
+
+  public setColumnCheck(col: Column, value: boolean) {
+    //
+    col.setChecked(value);
+    this.dataSource.resultRows.forEach(r => r[col.fieldName] = value);
+    this.checkedChangedEvent(new CheckedChangedEvent('column', null, col.fieldName, value));
+    this.queryChanged();
   }
 
   // Пользователь переключает галку в заголовке столбца
@@ -1222,10 +1233,7 @@ export abstract class GridState {
     if (col.isChecked || col.isChecked === null) {
       newValue = false;
     }
-
-    col.setChecked(newValue);
-    this.dataSource.resultRows.forEach(r => r[col.fieldName] = newValue);
-    this.queryChanged();
+    this.setColumnCheck(col, newValue);
   }
 
   // Обновление зависимых галок (чекбоксов) в гриде
@@ -1306,6 +1314,8 @@ export abstract class GridState {
   protected abstract summariesChangedEvent(c: Column): void;
 
   protected abstract valueChangedEvent(e: ValueChangedEvent): void;
+
+  protected abstract checkedChangedEvent(e: CheckedChangedEvent): void;
 
   protected abstract dragEvent(e: UIAction): void;
 
