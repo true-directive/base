@@ -29,6 +29,7 @@ import { GridSettings } from './grid-settings.class';
 import { GridAppearance } from './grid-appearance.class';
 import { GridLayout } from './grid-layout.class';
 import { GridLayoutRange, GridLayoutSelection } from './grid-layout-selection.class';
+import { GridExporter } from './grid-exporter.class';
 
 import { Utils } from './common/utils.class';
 import { Keys } from './common/keys.class';
@@ -751,9 +752,9 @@ export abstract class GridState {
   }
 
   /**
-   * Обработка события click. Переключение чекбокса мышью
-   * @param  cp         [description]
-   * @return            [description]
+   * Click event handling. Toggle cell checkbox.
+   * @param  cp         Cell position
+   * @return            Has event been handled
    */
   public click(cp: CellPosition): boolean {
     if (this.st.checkByCellClick && this.canToggleCheck(cp)) {
@@ -951,18 +952,7 @@ export abstract class GridState {
    * @return           Column index
    */
   public columnIndex(fieldName: string): number {
-    let i = 0;
-    let res = -1;
-    this.layouts.forEach(l => {
-      for (let j = 0; j < l.columns.length && res < 0; j++) {
-        if (l.columns[j].fieldName === fieldName) {
-          res = i;
-          break;
-        }
-        i++;
-      }
-    });
-    return res;
+    return GridLayout.columnIndex(this.layouts, fieldName);
   }
 
   public isSelected(pos: CellPosition): boolean {
@@ -1293,6 +1283,32 @@ export abstract class GridState {
     // Not implemented
   }
 
+  public getSelectedData(selection: Selection): GridExporter {
+    return GridExporter.dataToExport(
+      this.layouts, selection, this.st.selectionMode,
+      this.dataSource.resultRows, this.dataSource.valueFormatter);
+  }
+
+  // -- Data to export
+  public dataToExport(): GridExporter {
+
+    const firstCol = GridLayout.firstColumn(this.layouts);
+    const lastCol = GridLayout.lastColumn(this.layouts);
+
+    const rr = this.dataSource.resultRows;
+
+    const sel = new Selection();
+    sel.startSelect(new CellPosition(rr[0], 0, firstCol.fieldName));
+    sel.proceedToSelect(new CellPosition(rr[rr.length - 1], rr.length - 1, lastCol.fieldName), false);
+
+    return GridExporter.dataToExport(
+      this.layouts, sel, SelectionMode.RANGE,
+      this.dataSource.resultRows, this.dataSource.valueFormatter);
+  }
+
+  public abstract copySelectionToClipboard(withColumns: boolean): void;
+  public abstract exportToCSV(fileName: string): void;
+
   // -- CUSTOM CELL EVENTS -----------------------------------------------------
   public emitCustomCellEvent(e: any) {
     this.customCellEvent(e);
@@ -1330,5 +1346,4 @@ export abstract class GridState {
   protected abstract startEditingEvent(cp: CellPosition): void;
 
   protected abstract stopEditingEvent(returnFocus: boolean): void;
-
 }

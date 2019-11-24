@@ -47,7 +47,7 @@ export class Keys {
       return '';
     }
 
-    // Служебные символы неинтересны
+    // These chars are useless for us..
     if (e.keyCode > 0 && e.keyCode < 32) {
       return '';
     }

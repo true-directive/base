@@ -50,6 +50,7 @@ export { GridLayoutRange, GridLayoutSelection } from './src/grid-layout-selectio
 export { GridLayout } from './src/grid-layout.class';
 export { GridSettings } from './src/grid-settings.class';
 export { GridState } from './src/grid-state.class';
+export { GridExporter } from './src/grid-exporter.class';
 
 export { PageInfo } from './src/page-info.class';
 export { RowCalculator } from './src/row-calculator.class';

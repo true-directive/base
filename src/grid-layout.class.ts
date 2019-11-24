@@ -533,5 +533,56 @@ export class GridLayout {
     return result;
   }
 
+  /**
+   * Returns the column index in the column list by field name
+   * @param  fieldName Name of the field to be searched
+   * @return           Column index
+   */
+  public static columnIndex(layouts: GridLayout[], fieldName: string): number {
+    let i = 0;
+    let res = -1;
+    layouts.forEach(l => {
+      for (let j = 0; j < l.columns.length && res < 0; j++) {
+        if (l.columns[j].fieldName === fieldName) {
+          res = i;
+          break;
+        }
+        i++;
+      }
+    });
+    return res;
+  }
+
+  public static columnByIndex(layouts: GridLayout[], index: number): Column {
+    let i = 0;
+    let res = null;
+    layouts.forEach(l => {
+      for (let j = 0; j < l.columns.length; j++) {
+        if (i === index) {
+          res = l.columns[j];
+          break;
+        }
+        i++;
+      }
+    });
+    return res;
+  }
+
+  public static columnCount(layouts: GridLayout[]): number {
+    let res = 0;
+    layouts.forEach(l => {
+        res += l.columns.length;
+    });
+    return res;
+  }
+
+  public static firstColumn(layouts: GridLayout[]): Column {
+    return GridLayout.columnByIndex(layouts, 0);
+  }
+
+  public static lastColumn(layouts: GridLayout[]): Column {
+    return GridLayout.columnByIndex(layouts, GridLayout.columnCount(layouts) - 1);
+  }
+
   constructor(public place: GridPart) { }
 }

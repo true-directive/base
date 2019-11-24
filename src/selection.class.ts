@@ -16,7 +16,7 @@ import { SelectionMode } from './enums';
  * Содержит одну ячейку, на которой установлена фокусировка и набор
  * прямоугольных областей
  */
-export abstract class Selection {
+export class Selection {
 
   private _lastFocusedField: string = null;
   private _focusedCell: CellPosition = null;
@@ -94,7 +94,7 @@ export abstract class Selection {
    * @param  ctrl Нажат ли Ctrl. Если true, то новая область будет добавлена к
    *              имеющемся. Иначе сначала производится очистка областей.
    */
-  public startSelect(pos: CellPosition, ctrl: boolean) {
+  public startSelect(pos: CellPosition, ctrl: boolean = false) {
     // Если нажат контрол, то не сбрасываем области, а добавляем..
     if (!ctrl) {
       this.ranges.splice(0, this.ranges.length);
@@ -564,7 +564,11 @@ export abstract class Selection {
     return false;
   }
 
-  protected abstract selectionChangedEvent(cp: CellPosition): void;
+  protected selectionChangedEvent(cp: CellPosition): void {
+    //
+  }
 
-  protected abstract focusChangedEvent(cp: CellPosition): void;
+  protected focusChangedEvent(cp: CellPosition): void {
+    //
+  }
 }

@@ -10,7 +10,7 @@ import { SelectionMode } from './enums';
  * Range of cells
  * Rectangular area in the grid. Defined by:
  *  - fromCell: CellPosition  - starting cell.
- *  - toCell: CellPosition - end cell.
+ *  - toCell: CellPosition - ending cell.
  */
 export class CellRange {
 
