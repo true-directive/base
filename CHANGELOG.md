@@ -98,3 +98,9 @@
 ### Added
 
 - CheckedChanged event.
+
+## [1.2.9] - 2019-11-24
+
+### Added
+
+- GridExporter class.
