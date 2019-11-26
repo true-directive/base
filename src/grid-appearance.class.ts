@@ -16,6 +16,12 @@ export class GridAppearance {
   public class = 'true-grid-appearance';
 
   /**
+   * Класс материального грида
+   */
+  public classMat = 'true-grid-material';
+
+
+  /**
    * Класс данных грида
    */
   public dataClass = 'true-grid-data-appearance';
@@ -191,7 +197,7 @@ export class GridAppearance {
    * @return Строка с классами через пробел
    */
   public getFooterClass() {
-    let res = ''; //this.footerClass;
+    let res = '';
     if (this.footerVerticalLines) {
       res += ' true-v-lines';
     }

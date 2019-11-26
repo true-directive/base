@@ -23,9 +23,9 @@ export class GridSettings {
   public keyField = '';
 
   /**
-   * Change detection mode
+   * Grid's css-class
    */
-  public readonly appearance: GridAppearance = new GridAppearance();
+  public appearance: GridAppearance = new GridAppearance();
 
   /**
    * Грид запрашивает данные у родительского компонента
@@ -39,6 +39,7 @@ export class GridSettings {
   public widthUnit = 'px';
 
   /**
+   * Change detection mode
    * Режим проверки изменений. При значении MANUAL необходимо вручную вызывать
    * обновление грида после изменения данных.
    */
