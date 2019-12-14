@@ -227,6 +227,8 @@ export class GridSettings {
   public enableDataContextMenu = false;
   public enableHeaderContextMenu = false;
 
+  public autoFocusAfterEditor = true;
+
   /**
    * Is row's height fixed?
    */
@@ -353,7 +355,6 @@ export class GridSettings {
         res += ' true-column-nobtn';
       }
     }
-
     return res;
   }
 
