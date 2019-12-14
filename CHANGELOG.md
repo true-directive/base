@@ -103,4 +103,12 @@
 
 ## [1.2.10] - 2019-11-26
 
+### Added
+
 - MaterialGrid appearance setting.
+
+## [1.2.11] - 2019-12-14
+
+### Added
+
+- Setting to prevent focus after editing.
