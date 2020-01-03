@@ -112,3 +112,9 @@
 ### Added
 
 - Setting to prevent focus after editing.
+
+## [1.2.12] - 2020-01-03
+
+### Fixed
+
+- Vulnerability fix.

@@ -1,6 +1,6 @@
 {
   "name": "@true-directive/base",
-  "version": "1.2.11",
+  "version": "1.2.12",
   "description": "The set of base classes for the TrueDirective Grid",
   "main": "./bundles/true-directive-base.umd.js",
   "scripts": {
@@ -30,7 +30,7 @@
     "@types/node": "^8.0.53",
     "ajv": "^6.10.0",
     "awesome-typescript-loader": "^5.2.1",
-    "copy-webpack-plugin": "^4.6.0",
+    "copy-webpack-plugin": "^5.1.1",
     "istanbul-instrumenter-loader": "^3.0.0",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
