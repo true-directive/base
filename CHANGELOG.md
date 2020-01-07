@@ -118,3 +118,9 @@
 ### Fixed
 
 - Vulnerability fix.
+
+## [1.3.0] - 2020-01-07
+
+### Added
+
+- Lazy loading support.
