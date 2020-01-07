@@ -10,7 +10,11 @@ export class PagePipe {
     const res: any[] = [];
 
     let i = pageInfo.offset;
-    while (i < (pageInfo.offset + pageInfo.limit) && i < rows.length) {
+    while (i < (pageInfo.offset + pageInfo.limit)) {
+      if (!rows[i]) {
+        // Иначе при ленивой загрузке сходит с ума trackBy
+        rows[i] = {__ax: 'empty'};
+      }
       res.push(rows[i]);
       i++;
     }

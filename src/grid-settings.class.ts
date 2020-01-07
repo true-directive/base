@@ -4,7 +4,7 @@
  * @license MIT
 */
 import { RenderMode, DetectionMode, SelectionMode, EditorShowMode,
-         ColumnType } from './enums';
+         ColumnType, LazyLoadingMode } from './enums';
 
 import { Column } from './column.class';
 import { MenuAction } from './menu-action.class';
@@ -49,6 +49,26 @@ export class GridSettings {
    * Режим отрисовки (все данные или только видимые)
    */
   public renderMode: RenderMode = RenderMode.ALL;
+
+  /**
+   * Lazy Loading mode
+   */
+  public lazyLoading: LazyLoadingMode = LazyLoadingMode.NONE;
+
+  /**
+   * Page size
+   */
+  public lazyLoadingPageSize: number = 400;
+
+  /**
+   *
+   */
+  public lazyLoadingThreshold: number = 50;
+
+  /**
+   * Milliseconds between scrolling and loading
+   */
+  public lazyLoadingPause: number = 10;
 
   /**
    * Способ выделения ячеек данных

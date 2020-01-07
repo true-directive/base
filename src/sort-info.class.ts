@@ -6,8 +6,8 @@
 // Тип сортировки
 export enum SortType {
   NONE = 'None',
-  ASC = 'ASCENDING',
-  DESC = 'DESCENDING'
+  ASC = 'ASC',
+  DESC = 'DESC'
 }
 
 // Информация о сортировке грида

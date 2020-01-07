@@ -7,6 +7,19 @@
 /**
  * Тип данных
  */
+export enum ColumnType {
+  STRING = 'STRING',
+  NUMBER = 'NUMBER',
+  DATETIME = 'DATETIME',
+  BOOLEAN = 'BOOLEAN',
+  REFERENCE = 'REFERENCE',
+  IMAGE = 'IMAGE',
+  CHECKBOX = 'CHECKBOX',
+  HTML = 'HTML',
+  UNSAFE_HTML = 'UNSAFE_HTML',
+  CUSTOM = 'CUSTOM'
+}
+/*
 export class ColumnType {
   constructor(public name: string) { }
 
@@ -30,7 +43,7 @@ export class ColumnType {
   // Будет создан компонент, тип которого задан в параметре
   // CellComponentType колонки
   static CUSTOM = new ColumnType('Component');
-}
+} */
 
 // Режим отслеживания изменений
 export class DetectionMode {
@@ -45,7 +58,6 @@ export class DetectionMode {
   // TrueGrid.detectChanges();
   static MANUAL = new DetectionMode('Manual');
 }
-
 
 /**
  * Части грида
@@ -68,6 +80,14 @@ export class GridPart {
   // Колонка, по которой сгруппированы данные (содержатся в области группировок)
   static GROUPED_COLUMN = new GridPart('groupedColumn');
 }
+
+export class LazyLoadingMode {
+  constructor(public name: string) { }
+  static NONE = new LazyLoadingMode('None');
+  static INCREMENTAL = new LazyLoadingMode('Incremental');
+  static FRAGMENTARY = new LazyLoadingMode('Fragmentary');
+}
+
 
 /**
  *  Режим рендера строк

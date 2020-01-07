@@ -76,7 +76,17 @@ export class Internationalization {
         separators: ['.', ','],
         currency: '${N1-12.2}',
 
-        translates: {}
+        translates: {
+          'CONTAINS': 'Contains',
+          'NOT_CONTAINS': 'Not contains',
+          'BETWEEN': 'Between',
+          'NOT_BETWEEN': 'Not between',
+          'EQUALS': 'Equals',
+          'NOT_EQUALS': 'Not equals',
+          'EMPTY': 'Empty',
+          'NOT_EMPTY': 'Not empty',
+          'SET_OF_ITEMS': 'Set',
+        }
       }
     );
 

@@ -25,5 +25,7 @@ export class Locale {
   public separators: Array<string> = [];
   public currency = '';
 
-  public translates: { [id: string]: any } = { };
+  public translates: { [id: string]: any } = {
+
+  };
 }

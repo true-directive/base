@@ -27,6 +27,9 @@ export class DataQuery {
     public searchString: string = '',
     public sortings: SortInfo[] = [],
     public groupedFields: string[] = [],
-    public subject: any = null
+    public subject: any = null,
+    public offset: number  = null,
+    public limit: number = null,
+    public resetData: boolean = false
   ) { }
 }

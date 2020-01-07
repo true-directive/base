@@ -8,19 +8,17 @@ import { Internationalization } from './internationalization/internationalizatio
 import { ValueFormatter } from './value-formatter.class';
 
 // Тип фильтра по колонке
-export class FilterOperator {
-  static NONE = new FilterOperator('None');
-  static BETWEEN = new FilterOperator('Between');
-  static NOT_BETWEEN = new FilterOperator('Not between');
-  static CONTAINS = new FilterOperator('Contains');
-  static NOT_CONTAINS = new FilterOperator('Not contains');
-  static EQUALS = new FilterOperator('Equals');
-  static NOT_EQUALS = new FilterOperator('Not equals');
-  static EMPTY = new FilterOperator('Empty');
-  static NOT_EMPTY = new FilterOperator('Not empty');
-  static SET = new FilterOperator('Set');
-
-  constructor(public name: string) { }
+export enum FilterOperator {
+  NONE = 'NONE',
+  BETWEEN = 'BETWEEN',
+  NOT_BETWEEN = 'NOT_BETWEEN',
+  CONTAINS = 'CONTAINS',
+  NOT_CONTAINS = 'NOT_CONTAINS',
+  EQUALS = 'EQUALS',
+  NOT_EQUALS = 'NOT_EQUALS',
+  EMPTY = 'EMPTY',
+  NOT_EMPTY = 'NOT_EMPTY',
+  SET = 'SET'
 }
 
 // Фильтр по колонке

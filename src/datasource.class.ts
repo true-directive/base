@@ -21,6 +21,10 @@ import { Utils } from './common/utils.class';
 
 import { RowDragOverseer } from './row-drag-overseer.class';
 
+import { LazyLoadingMode } from './enums';
+
+import { DataQuery } from './data-query.class';
+
 export class DataSource {
 
   /**
@@ -33,6 +37,28 @@ export class DataSource {
 
   public get model(): any[] {
     return this._model;
+  }
+
+  private _totalRowCount?: number = null;
+
+  public set totalRowCount(n: number) {
+    this._totalRowCount = n;
+  }
+
+  public get totalRowCount(): number {
+    //if (this._totalRowCount === null) {
+    //  return this._model ? this._model.length : 0;
+    //}
+    return this._totalRowCount;
+  }
+
+  public lazyLoaded?: number = null;
+
+  public get loadedRowCount(): number {
+    if (!this._model) {
+      return 0;
+    }
+    return this._model.length;
   }
 
   /**
@@ -147,7 +173,7 @@ export class DataSource {
    * @param  settings         [description]
    * @return                  [description]
    */
-  protected accomplishRecalc(rows: any[], columnCollection: ColumnCollection, settings: GridSettings) {
+  public accomplishFetch(rows: any[], columnCollection: ColumnCollection, settings: GridSettings) {
     this._resultRows = rows;
     this.summaries(columnCollection.columns);
   }
@@ -170,7 +196,7 @@ export class DataSource {
     const sorted: any[] = this.doSort(filtered);
 
     // Фиксируем
-    this.accomplishRecalc(sorted, columnCollection, settings);
+    this.accomplishFetch(sorted, columnCollection, settings);
   }
 
   /**
@@ -180,10 +206,16 @@ export class DataSource {
    * @param  columnCollection Коллекция колонок
    * @param  settings         Настройки
    */
-  public fetchData(rows: any[], columnCollection: ColumnCollection, settings: GridSettings) {
+  public fetchData(rows: any[], columnCollection: ColumnCollection, settings: GridSettings, totalRowCount: number = null) {
+
+    if (settings.lazyLoading !== LazyLoadingMode.NONE) {
+      return;
+    }
+
     // Производим окончательную обработку и фиксируем данные
     this.model = rows;
-    this.accomplishRecalc(rows, columnCollection, settings);
+    this.totalRowCount = totalRowCount;
+    this.accomplishFetch(rows, columnCollection, settings);
   }
 
   /**
@@ -276,7 +308,7 @@ export class DataSource {
   }
 
   public rowData(row: any): any {
-    return row;
+    return row ? row : null;
   }
 
   public displayedValue(col: Column, value: any, row: any) {

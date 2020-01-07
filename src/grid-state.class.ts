@@ -3,7 +3,7 @@
  * @link https://truedirective.com/
  * @license MIT
 */
-import { ColumnType, SelectionMode,
+import { ColumnType, SelectionMode, LazyLoadingMode,
          GridPart, EditorShowMode } from './enums';
 
 import { CheckedChangedEvent, ValueChangedEvent, FilterShowEvent } from './events';
@@ -31,6 +31,8 @@ import { GridLayout } from './grid-layout.class';
 import { GridLayoutRange, GridLayoutSelection } from './grid-layout-selection.class';
 import { GridExporter } from './grid-exporter.class';
 
+import { LazyLoader } from './lazy-loader.class';
+
 import { Utils } from './common/utils.class';
 import { Keys } from './common/keys.class';
 
@@ -44,9 +46,10 @@ import { Internationalization } from './internationalization/internationalizatio
  * - sorting info
  * - drag-n-drop state
  * - current page info
- * Receives changes of state and provides it for all parts of the grid.
+ * Receives changes of the state and provides it for all parts.
  */
 export abstract class GridState {
+
 
   /**
    * Data source
@@ -99,6 +102,15 @@ export abstract class GridState {
    */
   public get maxLevel(): number  {
     return 0;
+  }
+
+  /**
+   * LazyLoader instance
+   */
+  private _lazyLoader = new LazyLoader();
+
+  public get lazy(): boolean {
+    return this.st.lazyLoading !== LazyLoadingMode.NONE;
   }
 
   /**
@@ -394,7 +406,50 @@ export abstract class GridState {
    * @param  subject Observer
    */
   protected doQuery(counter: number, subject: any = null) {
+    if (this.lazy) {
+      this.checkLazy(0, this.st.lazyLoadingPageSize, true);
+      return;
+    }
     this.dataQueryEvent(this.getQuery(counter, subject));
+  }
+
+  private resetLazy() {
+    if (this.lazy) {
+      this._lazyLoader.reset(this.dataSource);
+    }
+  }
+
+  private _lazyOffset: number = null;
+  private _lazyLimit: number = null;
+  public checkLazy(offset: number, limit: number, reset: boolean = false): boolean {
+    if (!this.lazy) {
+      return false;
+    }
+
+    this._lazyOffset = offset;
+    this._lazyLimit = limit;
+
+    const q = this.getQuery();
+
+    if (reset) {
+      const res = this._lazyLoader.checkLazy(this.st, q, this.dataSource, offset, limit, reset);
+      if (res) {
+        this.dataQueryEvent(q);
+      }
+      return res;
+    }
+
+    setTimeout(() => {
+      // Антидребезг. Если до сих пор те же лимит и оффсет, то загружаем
+      if (this._lazyOffset === offset && this._lazyLimit === limit) {
+        const res = this._lazyLoader.checkLazy(this.st, q, this.dataSource, offset, limit, reset);
+        if (res) {
+          this.dataQueryEvent(q);
+        }
+      }
+    }, this.st.lazyLoadingPause);
+
+    return true;
   }
 
   /**
@@ -402,7 +457,7 @@ export abstract class GridState {
    * @param  async Recalculation in the asynchronous thread.
    */
   public updateData(async: boolean = true) {
-    if (this.settings.requestData) {
+    if (this.settings.requestData || this.lazy) {
       // Необходимо запросить данные
       this.doQuery(++this._dataQueryCounter);
       // НО! Нужно обновить колонки.
@@ -424,31 +479,40 @@ export abstract class GridState {
   }
 
   // Принимаем данные извне
-  public fetchData(query: DataQuery, data: any[] = null) {
-    // Если счетчик не совпадает, то позднее был новый запрос. И в этих данных смысла
-    // уже нет
-    if (this._dataQueryCounter === query.queryId) {
+  public fetchData(query: DataQuery, data: any[] = null, totalRowCount: number = null) {
 
-      if (data !== null) {
-        // Если данные пересчитаны извне..
-        this.dataSource.fetchData(data, this.columnCollection, this.settings);
+    if (this.lazy) {
+      this._lazyLoader.fetch(data, this.settings, query, this.dataSource, totalRowCount);
+      this.dataSource.accomplishFetch(this.dataSource.model, this.columnCollection, this.settings);
+    } else {
+      // Если счетчик не совпадает, то позднее был новый запрос. И в этих данных смысла
+      // уже нет
+      if (this._dataQueryCounter !== query.queryId) {
+        return;
       }
-
-      // Обновить нужно. Потому что уровни дерева могли поменяться
-      this.updateLayouts();
-      // Обновляем галки колонок
-      this.updateCheckColumns();
-      // Обновляем индексы строк выделенных областей
-      this.updateSelectionIndices('fetch');
-      // Отправляем информацию о том, что данные получены
-      this.dataFetchEvent(query);
+      if (data !== null) {
+          // Если данные пересчитаны извне..
+          this.dataSource.fetchData(data, this.columnCollection, this.settings, totalRowCount);
+      }
     }
+
+    // Обновить нужно. Потому что уровни дерева могли поменяться
+    this.updateLayouts();
+    // Обновляем галки колонок
+    this.updateCheckColumns();
+    // Обновляем индексы строк выделенных областей
+    this.updateSelectionIndices('fetch');
+    // Отправляем информацию о том, что данные получены
+    this.dataFetchEvent(query);
   }
 
   // Обновляем отображаемые данные в основном компоненте
   protected queryChanged() {
     // Генерируем событие о необходимости обновления данных
-    this.queryChangedEvent(this.getQuery());
+    // Проверяем ленивую загрузку с флагом сбрасывания данных
+    if (!this.checkLazy(0, this.st.lazyLoadingPageSize, true)) {
+      this.queryChangedEvent(this.getQuery());
+    }
   }
 
   // Значение выбранной ячейки

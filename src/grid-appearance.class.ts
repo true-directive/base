@@ -4,35 +4,33 @@
  * @license MIT
 */
 /**
- * Настройки внешнего вида грида.
- * В свойствах заданы классы, накладываемые на грид и на отдельные его части.
- * Можно заменить для кастомизации внешнего вида.
+ * Grid apperance settings
  */
 export class GridAppearance {
 
   /**
-   * Класс грида
+   * Grid's css-class
    */
   public class = 'true-grid-appearance';
 
   /**
-   * Класс материального грида
+   * Material grid's css-class
    */
   public classMat = 'true-grid-material';
 
 
   /**
-   * Класс данных грида
+   * Data appearance css-class
    */
   public dataClass = 'true-grid-data-appearance';
 
   /**
-   * Класс области заголовков
+   * Header apperance css-class
    */
   public headerAreaClass = 'true-header-appearance';
 
   /**
-   * Класс области футеров
+   * Footer appearance css-class
    */
   public footerAreaClass = 'true-footer-appearance';
 

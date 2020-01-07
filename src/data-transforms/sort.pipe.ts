@@ -78,8 +78,8 @@ export class SortPipe {
       }
 
       for (let i = 0; i < sortings.length; i++) {
-        let sortInfo = sortings[i];
-        let res = SortPipe.compare(a1[sortInfo.fieldName], a2[sortInfo.fieldName], sortInfo.sortType);
+        const sortInfo = sortings[i];
+        const res = SortPipe.compare(a1[sortInfo.fieldName], a2[sortInfo.fieldName], sortInfo.sortType);
         if (res !== 0) {
           return res;
         }

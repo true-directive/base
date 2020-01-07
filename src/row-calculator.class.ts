@@ -218,19 +218,19 @@ export class RowCalculator {
 
   /**
    * Рассчитывает, сколько строк помещается на экране...
-   * @param  rowIndex       Индекс первой видимой строки
+   * @param  rowIndex       Index of the first rendered row
    * @param  viewPortHeight Высота вьюпорта
-   * @param  rows           Список отображаемых строк
+   * @param  rc             Number of rows
    * @return                upRowCount - количество строк, между заданной и строкой, находящейся на одну страницу выше,
    * downRowCount - между заданной и строкой, находящейся на одну страницу ниже
    */
-  public pageCapacity(rowIndex: number, viewPortHeight: number, rows: any[]): { upRowCount: number, downRowCount: number } {
+  public pageCapacity(rowIndex: number, viewPortHeight: number, rc: number): { upRowCount: number, downRowCount: number } {
     // Сколько строк помещается в странице
     const res = { upRowCount: 0, downRowCount: 0 };
 
     let dh = 0;
     let i = rowIndex;
-    while (dh < viewPortHeight && i < rows.length) {
+    while (dh < viewPortHeight && i < rc) {
       dh += this.getRowHeight(i);
       i++; // На одну вниз
     }
@@ -247,10 +247,10 @@ export class RowCalculator {
   }
 
   /**
-   * Вычисление информации для рендеринга
-   * @param  rc             Количество строк
-   * @param  pos            Позиция скролла
-   * @param  viewPortHeight Высота видимой области
+   * Calculates render parameters
+   * @param  rc             Number of rows
+   * @param  pos            Vertical scroll position
+   * @param  viewPortHeight Height of the visible area
    * @param  overWork       Сколько дополнительных строк нужно рендерить помимо видимых
    * @return                Информация о рендеринге
    */
@@ -271,7 +271,7 @@ export class RowCalculator {
       };
     }
 
-    let overWorkFwd = 4; // Рендерим на четыре строки больше перед видимой областью
+    let overWorkFwd = 4;  // Рендерим на четыре строки больше перед видимой областью
     let overWorkBack = 4; // И на четыре больше после видимой области
 
     // Но если извне пришли настройки, то принимаем их:
@@ -280,7 +280,7 @@ export class RowCalculator {
       overWorkBack = overWork.back;
     }
 
-    // Предварительно формируем нулевой рузультат
+    // Empty result:
     const res = {
       totalHeight: 0,
       beforeRows: 0, beforeHeight: 0,
@@ -307,7 +307,7 @@ export class RowCalculator {
         i0 = 0;
       }
 
-      // Из индексов в количество...
+      // From indices to numbers:
       res.beforeRows = i0; res.beforeHeight = i0 * HH;
       res.renderRows = i1 - i0 + 1; res.renderHeight = res.renderRows * HH;
       res.afterRows = rc - i1 - 1; res.afterHeight = res.afterRows * HH;
@@ -316,7 +316,7 @@ export class RowCalculator {
       return res;
     }
 
-    // А теперь более сложный сценарий...
+    // Complex scenario...
     let i = 0;
     let afterCounter = 0;
     const last10 = [];
