@@ -3,7 +3,7 @@
  * @link https://truedirective.com/
  * @license MIT
 */
-import { PageInfo } from '../page-info.class';
+import { PageInfo } from '../classes/page-info.class';
 
 export class PagePipe {
   transform(rows: any[], pageInfo: PageInfo): any[] {

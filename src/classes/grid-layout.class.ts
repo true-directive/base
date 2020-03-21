@@ -184,7 +184,7 @@ export class GridLayout {
 
     if (columns !== undefined) {
 
-      let currentBand = '';
+      let currentBand: string = '';
       let currentBandColumns: Column[] = [];
       let hasBands = false;
       let bandWidth = 0;
@@ -410,7 +410,8 @@ export class GridLayout {
     }
 
     let mrX = 0;
-    let cbCol = columns.prevCheckbox(tg);
+    const cbCol = columns.prevCheckbox(tg);
+
     // Необходимо перебрать колонки и понять, сможем ли мы бросить сюда наш заголовок.
     for (let i=0; i < items.length; i++) {
 

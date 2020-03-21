@@ -4,7 +4,7 @@
  * @license MIT
 */
 import { GridState } from './grid-state.class';
-import { RenderMode } from './enums';
+import { RenderMode } from './classes/enums';
 
 /**
  * Хранит высоты строк, пересчитывает позиции строк для рендреа

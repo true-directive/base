@@ -30,5 +30,4 @@ export class CellPosition {
     // Ключевое значение однозначно может указать на равенство строк
     return (this.keyValue !== null && this.keyValue === cp.keyValue || this.row === cp.row) && this.fieldName === cp.fieldName;
   }
-
 }

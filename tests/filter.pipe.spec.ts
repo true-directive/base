@@ -1,7 +1,7 @@
-import { ColumnType } from '../src/enums';
-import { Column } from '../src/column.class';
-import { ValueFormatter } from '../src/value-formatter.class';
-import { Filter, FilterOperator } from '../src/filter.class';
+import { ColumnType } from '../src/classes/enums';
+import { Column } from '../src/classes/column.class';
+import { ValueFormatter } from '../src/classes/value-formatter.class';
+import { Filter, FilterOperator } from '../src/classes/filter.class';
 import { FilterPipe } from '../src/data-transforms/filter.pipe';
 import { Internationalization } from '../src/internationalization/internationalization.class';
 

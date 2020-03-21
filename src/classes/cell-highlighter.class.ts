@@ -6,7 +6,7 @@
 import { ColumnType } from './enums';
 import { Column } from './column.class';
 
-import { Strings } from './common/strings.class';
+import { Strings } from '../common/strings.class';
 
 export class CellHighlighter {
   // Подсветка найденной подстроки
@@ -16,7 +16,7 @@ export class CellHighlighter {
       return v_displayed;
     }
 
-    const s = searchStr.toLowerCase(); 
+    const s = searchStr.toLowerCase();
 
     if (s === '') {
       return v_displayed;

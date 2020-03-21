@@ -124,3 +124,10 @@
 ### Added
 
 - Lazy loading support.
+
+## [1.4.0] - 2020-03-22
+
+### Changed
+
+- Refactoring.
+- Autowiring.

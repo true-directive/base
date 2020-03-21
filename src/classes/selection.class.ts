@@ -7,7 +7,8 @@ import { GridSettings } from './grid-settings.class';
 import { GridLayout } from './grid-layout.class';
 import { CellPosition } from './cell-position.class';
 import { CellRange } from './cell-range.class';
-import { Keys } from './common/keys.class';
+import { Column } from './column.class';
+import { Keys } from '../common/keys.class';
 
 import { SelectionMode } from './enums';
 
@@ -106,7 +107,6 @@ export class Selection {
   }
 
   public proceedToSelect(pos: CellPosition, scrollToPos: boolean = false): boolean {
-
     if (this.lastRange === null) {
       return; // Some kind of error..
     }
@@ -564,11 +564,79 @@ export class Selection {
     return false;
   }
 
-  protected selectionChangedEvent(cp: CellPosition): void {
-    //
+  protected selectionChangedEvent(cp: CellPosition): void { }
+
+  protected focusChangedEvent(cp: CellPosition): void { }
+
+  public columnIndex(lc: Column[], fieldName: string): number {
+    const c = lc.find(c => c.fieldName === fieldName);
+    return lc.indexOf(c);
   }
 
-  protected focusChangedEvent(cp: CellPosition): void {
-    //
+  /**
+   * The row containing a focused cell.
+   */
+  public get focusedRow(): any {
+    if (this.focusedCell) {
+      return this.focusedCell.row;
+    }
+    return null;
+  }
+
+  /**
+   * Выделена ли ячейка в заданной позиции ячейки
+   * @param  lc   Список колонок (по лэйаутам)
+   * @param  pos  Позиция ячейки
+   * @param  st   Настройки грида
+   * @return      Да или нет
+   */
+  public isSelected(lc: Column[], pos: CellPosition, st: GridSettings): boolean {
+
+    if (!pos || pos.rowIndex < 0 || lc.length < 1) {
+      return false;
+    }
+
+    const ii = this.columnIndex(lc, pos.fieldName);
+    for (const range of this.ranges) {
+
+      if (pos.rowIndex < range.fromRow || pos.rowIndex > range.toRow) {
+        continue;
+      }
+
+      let i1 = this.columnIndex(lc, range.fromField);
+      let i2 = this.columnIndex(lc, range.toField);
+
+      if (range.fromRow === range.toRow && i1 === i2) {
+        // Одна ячейка
+        if (st.selectionMode === SelectionMode.ROW ||
+            st.selectionMode === SelectionMode.ROW_AND_RANGE) {
+          // Значит выделена вся строка
+          return true;
+        }
+      }
+
+      if (i2 < i1) {
+        const t = i1; i1 = i2; i2 = t;
+      }
+
+      if (ii >= i1 && ii <= i2) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns value of column in the focused cell
+   * @param  c Column
+   * @return   Value
+   */
+  public focusedValue(c: Column): any {
+    let v = null;
+    if (this.focusedRow) {
+      v = this.focusedRow[c.fieldName];
+    }
+    return v;
   }
 }

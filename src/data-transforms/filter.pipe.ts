@@ -3,10 +3,10 @@
  * @link https://truedirective.com/
  * @license MIT
 */
-import { ColumnType } from '../enums';
-import { Column } from '../column.class';
-import { Filter, FilterOperator } from '../filter.class';
-import { ValueFormatter } from '../value-formatter.class';
+import { ColumnType } from '../classes/enums';
+import { Column } from '../classes/column.class';
+import { Filter, FilterOperator } from '../classes/filter.class';
+import { ValueFormatter } from '../classes/value-formatter.class';
 
 export class FilterPipe {
   private _searchStringApplicableForNumbers: boolean = false;

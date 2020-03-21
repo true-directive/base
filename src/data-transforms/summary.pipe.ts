@@ -3,8 +3,8 @@
  * @link https://truedirective.com/
  * @license MIT
 */
-import { SummaryType } from '../summary.class';
-import { Column } from '../column.class';
+import { SummaryType } from '../classes/summary.class';
+import { Column } from '../classes/column.class';
 
 export class SummaryPipe {
 

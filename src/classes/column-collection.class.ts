@@ -6,10 +6,10 @@
 import { GridPart } from './enums';
 import { Column } from './column.class';
 import { ColumnBand } from './column-band.class';
-import { Utils } from './common/utils.class';
+import { Utils } from '../common/utils.class';
 
 /**
- * Коллекция колонок.
+ * Column collection.
  */
 export class ColumnCollection {
 
@@ -69,7 +69,12 @@ export class ColumnCollection {
     return null;
   }
 
-  // Перемещение колонки
+  /**
+   * Перемещение колонки
+   * @param  target   Колонка, которую перемещает пользователь
+   * @param  dropInfo Описание места и обстоятельств, куда перемещает.
+   * @return          Можно ли переместить
+   */
   public reorderColumn(target: Column, dropInfo: any): boolean {
 
     let update = false;
@@ -134,7 +139,12 @@ export class ColumnCollection {
     return update;
   }
 
-  // Перемещение бэнда
+  /**
+   * Перемещение бэнда
+   * @param  targetBand Бэнд, который перемещает пользователь
+   * @param  dropInfo   Описание места и обстоятельств, куда перемещает.
+   * @return            Можно ли переместить
+   */
   public reorderBand(targetBand: ColumnBand, dropInfo: any): boolean {
 
     const dropBand: ColumnBand = <ColumnBand>dropInfo.item;

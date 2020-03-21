@@ -5,7 +5,9 @@
 */
 import { Column } from './column.class';
 
-// Группа колонок
+/**
+ * Column group
+ */
 export class ColumnBand {
   constructor(
     public caption: string,

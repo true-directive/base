@@ -25,7 +25,11 @@ export class GridSettings {
   /**
    * Grid's css-class
    */
-  public appearance: GridAppearance = new GridAppearance();
+  public readonly appearance: GridAppearance = new GridAppearance();
+
+  public get sta() {
+    return this.appearance;
+  }
 
   /**
    * Грид запрашивает данные у родительского компонента
@@ -446,4 +450,6 @@ export class GridSettings {
 
     return this.editorShowMode !== EditorShowMode.NONE && col.allowEdit;
   }
+
+  constructor() {}
 }

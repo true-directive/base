@@ -28,37 +28,47 @@ export { MaskSettings } from './src/mask/mask-settings.class';
 export { MaskState } from './src/mask/mask-state.class';
 export { MaskValue } from './src/mask/mask-value.class';
 
-export { MenuAction } from './src/menu-action.class';
+export { MenuAction } from './src/classes/menu-action.class';
 
-export * from './src/enums';
-export * from './src/events';
+export * from './src/classes/enums';
+export * from './src/classes/events';
 
-export { CellPosition } from './src/cell-position.class';
-export { CellRange } from './src/cell-range.class';
-export { CellHighlighter } from './src/cell-highlighter.class';
+export { CellPosition } from './src/classes/cell-position.class';
+export { CellRange } from './src/classes/cell-range.class';
+export { CellHighlighter } from './src/classes/cell-highlighter.class';
 
-export { Column } from './src/column.class';
-export { ColumnBand } from './src/column-band.class';
-export { ColumnCollection } from './src/column-collection.class';
+export { Column } from './src/classes/column.class';
+export { ColumnBand } from './src/classes/column-band.class';
 
-export { DataQuery } from './src/data-query.class';
-export { DataSource } from './src/datasource.class';
-export { Filter, FilterOperator } from './src/filter.class';
+export { DataQuery } from './src/classes/data-query.class';
+export { Filter, FilterOperator } from './src/classes/filter.class';
 
-export { GridAppearance } from './src/grid-appearance.class';
-export { GridLayoutRange, GridLayoutSelection } from './src/grid-layout-selection.class';
-export { GridLayout } from './src/grid-layout.class';
-export { GridSettings } from './src/grid-settings.class';
-export { GridState } from './src/grid-state.class';
-export { GridExporter } from './src/grid-exporter.class';
+export { GridLayoutRange, GridLayoutSelection } from './src/classes/grid-layout-selection.class';
 
-export { PageInfo } from './src/page-info.class';
+export { GridLayout } from './src/classes/grid-layout.class';
+
+export { GridAppearance } from './src/classes/grid-appearance.class';
+
+export { PageInfo } from './src/classes/page-info.class';
+export { RowLayout } from './src/classes/row-layout.class';
+export { RowPosition } from './src/classes/row-position.class';
+export { RowDragOverseer } from './src/classes/row-drag-overseer.class';
+export { SortInfo, SortType } from './src/classes/sort-info.class';
+export { Summary, SummaryType } from './src/classes/summary.class';
+export { UIAction, UIActionType } from './src/classes/ui-action.class';
+export { ValueFormatter } from './src/classes/value-formatter.class';
+export { Selection } from './src/classes/selection.class';
+export { GridSettings } from './src/classes/grid-settings.class';
+
+export { AxInject } from './src/classes/ax-inject.class';
+export { AxInjectConsumer } from './src/classes/ax-inject-consumer.class';
+
+export { ColumnCollection } from './src/classes/column-collection.class';
+export { DataSource } from './src/classes/data-source.class';
+export { GridUIHandler } from './src/handlers/grid-ui.handler';
+export { GridExporter } from './src/classes/grid-exporter.class';
+export { LayoutsHandler } from './src/handlers/layouts.handler';
+
+export { IEvents } from './src/events.interface';
 export { RowCalculator } from './src/row-calculator.class';
-export { RowLayout } from './src/row-layout.class';
-export { RowPosition } from './src/row-position.class';
-export { RowDragOverseer } from './src/row-drag-overseer.class';
-export { Selection } from './src/selection.class';
-export { SortInfo, SortType } from './src/sort-info.class';
-export { Summary, SummaryType } from './src/summary.class';
-export { UIAction, UIActionType } from './src/ui-action.class';
-export { ValueFormatter } from './src/value-formatter.class';
+export { GridState } from './src/grid-state.class';

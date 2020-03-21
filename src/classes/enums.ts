@@ -19,31 +19,6 @@ export enum ColumnType {
   UNSAFE_HTML = 'UNSAFE_HTML',
   CUSTOM = 'CUSTOM'
 }
-/*
-export class ColumnType {
-  constructor(public name: string) { }
-
-  static STRING = new ColumnType('String');
-  static NUMBER = new ColumnType('Number');
-  static DATETIME = new ColumnType('DateTime');
-  static BOOLEAN = new ColumnType('Boolean');
-  static REFERENCE = new ColumnType('Reference');
-  static IMAGE = new ColumnType('Image');
-
-  // Для такой колонки будут работать каскадные обновления значений
-  // для группировок и деревьев (от родительской row к дочерней)
-  static CHECKBOX = new ColumnType('Checkbox');
-
-  // HTML разметка будет размещена во вложенном компоненте
-  static HTML = new ColumnType('Html');
-
-  // HTML разметка будет назначена в innerHTML ячейки
-  static UNSAFE_HTML = new ColumnType('UnsafeHtml');
-
-  // Будет создан компонент, тип которого задан в параметре
-  // CellComponentType колонки
-  static CUSTOM = new ColumnType('Component');
-} */
 
 // Режим отслеживания изменений
 export class DetectionMode {

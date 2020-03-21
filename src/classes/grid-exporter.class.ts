@@ -1,11 +1,15 @@
-import { Column } from './column.class';
-import { ColumnCollection } from './column-collection.class';
-import { GridLayout } from './grid-layout.class';
-import { Selection } from './selection.class';
-import { SelectionMode } from './enums';
-import { CellRange } from './cell-range.class';
-import { ValueFormatter } from './value-formatter.class';
-import { Utils } from './common/utils.class';
+/**
+ * Copyright (c) 2018-2019 Aleksey Melnikov, True Directive Company.
+ * @link https://truedirective.com/
+ * @license MIT
+*/
+import { Column } from '../classes/column.class';
+import { GridLayout } from '../classes/grid-layout.class';
+import { Selection } from '../classes/selection.class';
+import { SelectionMode } from '../classes/enums';
+import { CellRange } from '../classes/cell-range.class';
+import { ValueFormatter } from '../classes/value-formatter.class';
+import { Utils } from '../common/utils.class';
 
 export class GridExporter {
 

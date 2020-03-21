@@ -1,6 +1,6 @@
-import { ValueFormatter } from '../src/value-formatter.class';
-import { Column } from '../src/column.class';
-import { ColumnType } from '../src/enums';
+import { ValueFormatter } from '../src/classes/value-formatter.class';
+import { Column } from '../src/classes/column.class';
+import { ColumnType } from '../src/classes/enums';
 import { Internationalization } from '../src/internationalization/internationalization.class';
 import { Locale } from '../src/internationalization/locale.class';
 

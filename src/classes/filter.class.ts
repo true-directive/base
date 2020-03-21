@@ -4,8 +4,9 @@
  * @license MIT
 */
 import { ColumnType } from './enums';
-import { Internationalization } from './internationalization/internationalization.class';
 import { ValueFormatter } from './value-formatter.class';
+
+import { Internationalization } from '../internationalization/internationalization.class';
 
 // Тип фильтра по колонке
 export enum FilterOperator {

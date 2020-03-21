@@ -47,8 +47,7 @@ export class Internationalization {
     return res ? res : s;
   }
 
-  constructor() {
-
+  constructor() {  
     this.locales.push(
       {
         name: 'English',

@@ -9,15 +9,16 @@ import { Filter } from './filter.class';
 import { SortInfo, SortType } from './sort-info.class';
 import { Summary, SummaryType } from './summary.class';
 
-import { FilterPipe } from './data-transforms/filter.pipe';
-import { SortPipe } from './data-transforms/sort.pipe';
-import { SummaryPipe } from './data-transforms/summary.pipe';
+import { FilterPipe } from '../data-transforms/filter.pipe';
+import { SortPipe } from '../data-transforms/sort.pipe';
+import { SummaryPipe } from '../data-transforms/summary.pipe';
 
 import { ColumnCollection } from './column-collection.class';
+import { CellPosition } from './cell-position.class';
 import { GridSettings } from './grid-settings.class';
 import { ValueFormatter } from './value-formatter.class';
 
-import { Utils } from './common/utils.class';
+import { Utils } from '../common/utils.class';
 
 import { RowDragOverseer } from './row-drag-overseer.class';
 
@@ -25,7 +26,18 @@ import { LazyLoadingMode } from './enums';
 
 import { DataQuery } from './data-query.class';
 
+import { AxInject } from './ax-inject.class';
+
+/**
+ * Источник данных
+ */
 export class DataSource {
+
+  @AxInject('columns')
+  columnCollection: ColumnCollection;
+
+  @AxInject('settings')
+  settings: GridSettings;
 
   /**
    * Исходный набор строк
@@ -46,9 +58,6 @@ export class DataSource {
   }
 
   public get totalRowCount(): number {
-    //if (this._totalRowCount === null) {
-    //  return this._model ? this._model.length : 0;
-    //}
     return this._totalRowCount;
   }
 
@@ -106,13 +115,28 @@ export class DataSource {
     this.clearSorting();
   }
 
+  public getQuery(counter: number = 0, subject: any = null) {
+    return new DataQuery(
+        counter,
+        this.filters,
+        this.searchString,
+        this.sortings,
+        [],
+        subject
+      );
+  }
+
   /**
    * Наложение фильтров
    * @param  rows Список строк
    * @return      Отфильтрованный набор строк
    */
-  public doFilter(rows: any[], columns: Column[]): any[] {
-    return new FilterPipe().transform(rows, columns, this.filters, this.searchString, this.valueFormatter);
+  public doFilter(rows: any[]): any[] {
+    return new FilterPipe().transform(rows,
+      this.columnCollection.columns,
+      this.filters,
+      this.searchString,
+      this.valueFormatter);
   }
 
   /**
@@ -146,10 +170,10 @@ export class DataSource {
    * @param  fieldName Наименование поля
    * @return           Необходим ли перезапрос данных
    */
-  public checkDataUpdateNeed(r: any, fieldName: string, columnCollection: ColumnCollection): boolean {
+  public checkDataUpdateNeed(r: any, fieldName: string): boolean {
 
     const fp = new FilterPipe();
-    const filterMatch = fp.match(r, columnCollection.columns, this.filters, this.searchString, this.valueFormatter);
+    const filterMatch = fp.match(r, this.columnCollection.columns, this.filters, this.searchString, this.valueFormatter);
     if (!filterMatch) {
       return true;
     }
@@ -158,7 +182,7 @@ export class DataSource {
       return true;
     }
 
-    const col: Column = columnCollection.columnByFieldName(fieldName);
+    const col: Column = this.columnCollection.columnByFieldName(fieldName);
     if (this.summariedByColumn(col)) {
       return true;
     }
@@ -169,53 +193,48 @@ export class DataSource {
   /**
    * Окончательная обрабтка данных и сохранение в resultRows.
    * @param  rows             [description]
-   * @param  columnCollection [description]
-   * @param  settings         [description]
    * @return                  [description]
    */
-  public accomplishFetch(rows: any[], columnCollection: ColumnCollection, settings: GridSettings) {
+  public accomplishFetch(rows: any[]) {
     this._resultRows = rows;
-    this.summaries(columnCollection.columns);
+    this.summaries(this.columnCollection.columns);
   }
 
   /**
    * Пересчет данных для отображения
-   * @param  columnCollection Коллекция колонок
-   * @param  settings         Настройки
    */
-  public recalcData(columnCollection: ColumnCollection, settings: GridSettings) {
+  public recalcData() {
     // Фильтруем
     let filtered: any[];
-    if (settings.treeChildrenProperty !== '') {
+    if (this.settings.treeChildrenProperty !== '') {
       // Для дерева не фильтруем - применится при обработке дерева
       filtered = this.model;
     } else {
-      filtered = this.doFilter(this.model, columnCollection.columns);
+      filtered = this.doFilter(this.model);
     }
     // Сортируем
     const sorted: any[] = this.doSort(filtered);
 
     // Фиксируем
-    this.accomplishFetch(sorted, columnCollection, settings);
+    this.accomplishFetch(sorted);
   }
 
   /**
    * Получение данных для отображения, которые обработаны вне нашего компонента.
    * Например, сервером.
    * @param  rows             Отфильтрованные, отсортированные данные.
-   * @param  columnCollection Коллекция колонок
    * @param  settings         Настройки
    */
-  public fetchData(rows: any[], columnCollection: ColumnCollection, settings: GridSettings, totalRowCount: number = null) {
+  public fetchData(rows: any[], totalRowCount: number = null) {
 
-    if (settings.lazyLoading !== LazyLoadingMode.NONE) {
+    if (this.settings.lazyLoading !== LazyLoadingMode.NONE) {
       return;
     }
 
     // Производим окончательную обработку и фиксируем данные
     this.model = rows;
     this.totalRowCount = totalRowCount;
-    this.accomplishFetch(rows, columnCollection, settings);
+    this.accomplishFetch(rows);
   }
 
   /**
@@ -328,13 +347,27 @@ export class DataSource {
     return rd;
   }
 
-  public canDrop(draggedRows: any[], dropRow: any, dropPos: string, settings: GridSettings): string {
-    // Проверка возможности drag and drop
+  /**
+   * Check drag possibility
+   * @param  draggedRows [description]
+   * @param  dropRow     [description]
+   * @param  dropPos     [description]
+   * @return             [description]
+   */
+  public canDrop(draggedRows: any[], dropRow: any, dropPos: string): string {
     const overseer = new RowDragOverseer();
     return overseer.canDrop(this.resultRows, draggedRows, dropRow, dropPos, false);
   }
 
-  public moveRows(draggedRows: any[], dropTarget: any, dropPos: string, settings: GridSettings): boolean {
+  public canEditCell(cp: CellPosition): boolean {
+    if (cp) {
+      const col: Column = this.columnCollection.columnByFieldName(cp.fieldName);
+      return col.isCheckbox ? false : this.settings.canEditColumnCell(col);
+    }
+    return false;
+  }
+
+  public moveRows(draggedRows: any[], dropTarget: any, dropPos: string): boolean {
     for (let i = 0; i < draggedRows.length; i++) {
       let ri = this.model.indexOf(dropTarget);
       if (dropPos === 'after') {

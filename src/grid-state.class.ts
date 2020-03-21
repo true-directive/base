@@ -3,40 +3,43 @@
  * @link https://truedirective.com/
  * @license MIT
 */
-import { ColumnType, SelectionMode, LazyLoadingMode,
-         GridPart, EditorShowMode } from './enums';
+import { SelectionMode, LazyLoadingMode,
+         GridPart, EditorShowMode } from './classes/enums';
 
-import { CheckedChangedEvent, ValueChangedEvent, FilterShowEvent } from './events';
-import { UIAction, UIActionType } from './ui-action.class';
+import { FilterShowEvent } from './classes/events';
 
-import { DataSource } from './datasource.class';
+import { DataSource } from './classes/data-source.class';
 
-import { Summary, SummaryType } from './summary.class';
-import { SortInfo, SortType } from './sort-info.class';
-import { PageInfo } from './page-info.class';
+import { Summary, SummaryType } from './classes/summary.class';
+import { SortInfo, SortType } from './classes/sort-info.class';
+import { PageInfo } from './classes/page-info.class';
 
-import { Column } from './column.class';
-import { ColumnBand } from './column-band.class';
-import { ColumnCollection } from './column-collection.class';
-import { Filter } from './filter.class';
-import { DataQuery } from './data-query.class';
+import { Column } from './classes/column.class';
+import { ColumnBand } from './classes/column-band.class';
+import { ColumnCollection } from './classes/column-collection.class';
+import { Filter } from './classes/filter.class';
+import { DataQuery } from './classes/data-query.class';
 
-import { CellPosition } from './cell-position.class';
-import { CellRange } from './cell-range.class';
-import { Selection } from './selection.class';
+import { CellPosition } from './classes/cell-position.class';
+import { Selection } from './classes/selection.class';
 
-import { GridSettings } from './grid-settings.class';
-import { GridAppearance } from './grid-appearance.class';
-import { GridLayout } from './grid-layout.class';
-import { GridLayoutRange, GridLayoutSelection } from './grid-layout-selection.class';
-import { GridExporter } from './grid-exporter.class';
-
-import { LazyLoader } from './lazy-loader.class';
+import { GridAppearance } from './classes/grid-appearance.class';
+import { GridLayout } from './classes/grid-layout.class';
+import { GridExporter } from './classes/grid-exporter.class';
 
 import { Utils } from './common/utils.class';
-import { Keys } from './common/keys.class';
 
-import { Internationalization } from './internationalization/internationalization.class';
+import { AxInject } from './classes/ax-inject.class';
+import { AxInjectConsumer } from './classes/ax-inject-consumer.class';
+
+import { GridSettings } from './classes/grid-settings.class';
+import { GridUIHandler } from './handlers/grid-ui.handler';
+import { GridCheckHandler } from './handlers/grid-check.handler';
+import { GridDragHandler } from './handlers/grid-drag.handler';
+import { GridLazyLoadHandler } from './handlers/grid-lazy-load.handler';
+import { LayoutsHandler } from './handlers/layouts.handler';
+
+import { IEvents } from './events.interface';
 
 /**
  * Grid's state. Contains:
@@ -48,20 +51,53 @@ import { Internationalization } from './internationalization/internationalizatio
  * - current page info
  * Receives changes of the state and provides it for all parts.
  */
-export abstract class GridState {
+export abstract class GridState extends AxInjectConsumer {
 
+  @AxInject('dataSource')
+  public dataSource: DataSource;
+
+  @AxInject('selection')
+  public selection: Selection;
+
+  @AxInject('check')
+  public check: GridCheckHandler;
+
+  @AxInject('dragDrop')
+  public dragDrop: GridDragHandler;
+
+  @AxInject('ui')
+  public ui: GridUIHandler;
+
+  @AxInject('lazyLoader')
+  public lazyLoader: GridLazyLoadHandler;
+
+  @AxInject('events')
+  public events: IEvents;
+
+  @AxInject('layouts')
+  public layoutsHandler: LayoutsHandler;
 
   /**
-   * Data source
+   * Список колонок
    */
-  protected _dataSource: DataSource = null;
+  @AxInject('columns')
+  public columnCollection: ColumnCollection; // = new ColumnCollection();
 
-  public get dataSource() {
-    if (this._dataSource === null) {
-      this._dataSource = new DataSource();
-    }
-    return this._dataSource;
+  /**
+   * Grid's settings.
+   * Будет создано. Но можем и поменять. Если меняем - обновляем в хэндлерах.
+   */
+  @AxInject('settings')
+  private _settings: GridSettings;
+
+  public set settings(s: GridSettings) {
+    this._settings = s;
+    this.updateInjections();
   }
+
+  public get settings(): GridSettings { return this._settings; }
+  public get st(): GridSettings { return this._settings; } // Short alias
+  public get sta(): GridAppearance { return this.settings.appearance; } // Short alias
 
   /**
    * Данные грида
@@ -74,19 +110,53 @@ export abstract class GridState {
     return this.dataSource.model;
   }
 
-  /**
-   * Список колонок
-   */
-  public readonly columnCollection = new ColumnCollection();
-
   public set columns(v: Column[]) {
     this.columnCollection.columns = v;
     this.setLayoutsVisibility();
     this.updateLayouts();
   }
 
-  public get columns() {
+  public get columns(): Column[] {
     return this.columnCollection.columns;
+  }
+
+  public get layout(): GridLayout {
+    return this.layoutsHandler.layout;
+  }
+
+  public get layoutDrag(): GridLayout {
+    return this.layoutsHandler.layoutDrag;
+  }
+
+  // -- etc --
+  public IE: boolean = Utils.detectIE();
+  public iOS: boolean = Utils.detectIOS();
+  public android: boolean = Utils.detectAndroid();
+  public safari: boolean = Utils.detectSafari();
+
+  public pageInfo: PageInfo = new PageInfo(0, 1);
+
+  // Это всё мы передадим в обработчики
+
+  public get showFixedLeft(): boolean {
+    return false;
+  }
+
+  public get showFixedRight(): boolean {
+    return false;
+  }
+
+  public set showFixedLeft(v: boolean) { }
+
+  public set showFixedRight(v: boolean) { }
+
+  /**
+   * Gets column by field name
+   * @param  f Field name
+   * @return   Column if exists
+   */
+  public columnByFieldName(f: string): Column {
+    return this.columnCollection.columnByFieldName(f);
   }
 
   /**
@@ -103,49 +173,6 @@ export abstract class GridState {
   public get maxLevel(): number  {
     return 0;
   }
-
-  /**
-   * LazyLoader instance
-   */
-  private _lazyLoader = new LazyLoader();
-
-  public get lazy(): boolean {
-    return this.st.lazyLoading !== LazyLoadingMode.NONE;
-  }
-
-  /**
-   * Position of the cell containing an editor
-   */
-  private _editor: CellPosition = null;
-
-  public get editor() {
-    return this._editor;
-  }
-
-  /**
-   * Значение редактора. Storing value here because cell may be not rendered.
-   */
-  public editorValue: any = null;
-
-  /**
-   * Cell value before editing
-   */
-  public editorValueChanged = false;
-
-  /**
-   * If the editor has been shown. This flag is necessary for understanding
-   * if the dropdown list has been shown avoid more showing
-   * (during the scrolling the editor may be initialized several times).
-   */
-  public editorWasShown = false;
-
-  /**
-   * Editor's height. We need to remember it because cell containing editor can
-   * affect the height of the row. Without storing this value the row's height will
-   * be lost.
-   */
-  public editorHeight: number = null;
-
 
   /**
    * The width of viewport's visible area.
@@ -165,14 +192,11 @@ export abstract class GridState {
   }
 
   /**
-   * Left fixed area is shown. Not supported in current version.
+   * The list of grid parts
    */
-  public showFixedLeft = false;
-
-  /**
-   * Right fixed area is shown. Not supported in current version.
-   */
-  public showFixedRight = false;
+  public get layouts(): Array<GridLayout> {
+    return this.layoutsHandler.layouts;
+  }
 
   /**
    * The device supporting touch events is used.
@@ -180,16 +204,6 @@ export abstract class GridState {
   public get touchMode(): boolean {
     return this.iOS || this.android;
   }
-
-  /**
-   * Main area layout
-   */
-  public readonly layout: GridLayout = new GridLayout(GridPart.CENTER);
-
-  /**
-   * Dragged element's layout
-   */
-  public readonly layoutDrag: GridLayout = new GridLayout(GridPart.DRAG_ITEM);
 
   /**
    * Index of the first row is displayed according to current scroll position.
@@ -205,151 +219,11 @@ export abstract class GridState {
   }
 
   /**
-   * Previous position of the focused cell
-   */
-  private _prevFocused: CellPosition = null;
-
-  /**
    * Data query counter
    */
   protected _dataQueryCounter = 0;
 
   // ---------------------------------------------------------------------------
-  /**
-   * Grid's settings.
-   */
-  private _settings: GridSettings = new GridSettings();
-
-  public set settings(s: GridSettings) { this._settings = s; }
-  public get settings(): GridSettings { return this._settings; }
-  public get st(): GridSettings { return this.settings; } // Short alias
-  public get sta(): GridAppearance { return this.settings.appearance; } // Short alias
-
-  /**
-   * ...
-   */
-  public pageInfo: PageInfo = new PageInfo(0, 1);
-
-  /**
-   * Selection info
-   */
-  public readonly abstract selection: Selection;
-
-  /**
-   * Internationalization
-   */
-  public readonly abstract internationalization: Internationalization;
-
-  /**
-   * Focused cell position
-   */
-  public get focusedCell(): CellPosition {
-    return this.selection.focusedCell;
-  }
-
-  public set focusedCell(cp: CellPosition) {
-    this.selection.focusedCell = cp === null ? null : cp.clone();
-  }
-
-  /**
-   * The row containing a focused cell.
-   */
-  public get focusedRow(): any {
-    if (this.selection.focusedCell) {
-      return this.selection.focusedCell.row;
-    }
-    return null;
-  }
-
-  /**
-   * The column containing a focused cell.
-   */
-  public get focusedColumn(): Column {
-    if (this.selection.focusedCell !== null) {
-      return this.columnCollection.columnByFieldName(this.selection.focusedCell.fieldName);
-    }
-    return null;
-  }
-
-  /**
-   * The list of columns' fieldnames which are being dragged.
-   */
-  public readonly disabledFields: string[] = [];
-
-  // -- etc --
-  public IE: boolean = Utils.detectIE();
-  public iOS: boolean = Utils.detectIOS();
-  public android: boolean = Utils.detectAndroid();
-  public safari: boolean = Utils.detectSafari();
-
-  /**
-   * Handling of the pressed key before editor Initialization.
-   */
-  public processKeyBeforeEdit(keyEvent: any) {
-    const keyChar = Keys.keyChar(keyEvent);
-    if (this._editor !== null && keyChar.length === 1) {
-      // Initialization of the editor is started.
-      // Apply key.
-      if (!this.editorValueChanged) {
-        this.editorValue = keyChar;
-        this.editorValueChanged = true;
-      } else {
-        this.editorValue += keyChar;
-      }
-      keyEvent.stopPropagation();
-      keyEvent.preventDefault();
-    }
-  }
-
-  /**
-   * Editor Initialization.
-   * @param  cp            Cell position
-   * @param  returnFocus   Set this parameter true if it is necessary to return the focus into the grid.
-   * @param  keyEvent      The key that runs cell into the edit mode.
-   * @param  cancelCurrent Set this parameter true to reject the changes of the previous editing.
-   */
-  public setEditor(cp: CellPosition, returnFocus: boolean = false, keyEvent: any = null, cancelCurrent: boolean = false) {
-
-    if (this._editor === null && cp === null) {
-      return;
-    }
-
-    // There is no editor or previous editor is equal to the currrent one.
-    if (this._editor === null || !this._editor.equals(cp)) {
-
-      const v0 = this.editorValue; //  Previous value
-      const ed0 = this._editor;
-      this._editor = cp === null ? null : cp.clone();
-      this.editorHeight = null;
-
-      // Current value
-      let v: any = null;
-      if (cp !== null) {
-        v = cp.row[cp.fieldName];
-        const col = this.columnCollection.columnByFieldName(cp.fieldName);
-        if (col.type === ColumnType.STRING) {
-          v = v === null ? '' : Utils.htmlToPlaintext(v);
-        }
-      }
-      this.editorWasShown = false;
-      this.editorValueChanged = false;
-      this.editorValue = v;
-      this.processKeyBeforeEdit(keyEvent);
-
-      if (ed0 !== null && this._editor === null) {
-        // Save value of the current editor.
-        if (this.st.editorAutoCommit && !cancelCurrent) {
-          this.commitEditor(ed0.row, ed0.fieldName, v0);
-        }
-        this.stopEditingEvent(returnFocus);
-      } else {
-        // Send notification about the new editor.
-        if (this._editor !== null) {
-          this.startEditingEvent(this._editor);
-        }
-      }
-    }
-  }
 
   /**
    * Visibility settings of grid's parts.
@@ -384,20 +258,13 @@ export abstract class GridState {
    */
   protected recalcData(): Promise<void> {
     return new Promise((resolve) => {
-      this.dataSource.recalcData(this.columnCollection, this.settings);
+      this.dataSource.recalcData();
       resolve();
     });
   }
 
-  protected getQuery(counter: number = 0, subject: any = null) {
-    return new DataQuery(
-        counter,
-        this.dataSource.filters,
-        this.dataSource.searchString,
-        this.dataSource.sortings,
-        [],
-        subject
-      );
+  public getQuery(subject: any = null): DataQuery {
+    return this.dataSource.getQuery(++this._dataQueryCounter, subject);
   }
 
   /**
@@ -405,51 +272,12 @@ export abstract class GridState {
    * @param  counter Query counter value
    * @param  subject Observer
    */
-  protected doQuery(counter: number, subject: any = null) {
-    if (this.lazy) {
-      this.checkLazy(0, this.st.lazyLoadingPageSize, true);
+  protected doQuery(subject: any = null) {
+    if (this.lazyLoader.query()) {
+      // Если запрос сделает ленивый загрузчик, то выходим
       return;
     }
-    this.dataQueryEvent(this.getQuery(counter, subject));
-  }
-
-  private resetLazy() {
-    if (this.lazy) {
-      this._lazyLoader.reset(this.dataSource);
-    }
-  }
-
-  private _lazyOffset: number = null;
-  private _lazyLimit: number = null;
-  public checkLazy(offset: number, limit: number, reset: boolean = false): boolean {
-    if (!this.lazy) {
-      return false;
-    }
-
-    this._lazyOffset = offset;
-    this._lazyLimit = limit;
-
-    const q = this.getQuery();
-
-    if (reset) {
-      const res = this._lazyLoader.checkLazy(this.st, q, this.dataSource, offset, limit, reset);
-      if (res) {
-        this.dataQueryEvent(q);
-      }
-      return res;
-    }
-
-    setTimeout(() => {
-      // Антидребезг. Если до сих пор те же лимит и оффсет, то загружаем
-      if (this._lazyOffset === offset && this._lazyLimit === limit) {
-        const res = this._lazyLoader.checkLazy(this.st, q, this.dataSource, offset, limit, reset);
-        if (res) {
-          this.dataQueryEvent(q);
-        }
-      }
-    }, this.st.lazyLoadingPause);
-
-    return true;
+    this.events.dataQueryEvent(this.getQuery());
   }
 
   /**
@@ -457,11 +285,11 @@ export abstract class GridState {
    * @param  async Recalculation in the asynchronous thread.
    */
   public updateData(async: boolean = true) {
-    if (this.settings.requestData || this.lazy) {
+    if (this.settings.requestData || this.settings.lazyLoading !== LazyLoadingMode.NONE) {
       // Необходимо запросить данные
-      this.doQuery(++this._dataQueryCounter);
+      this.doQuery();
       // НО! Нужно обновить колонки.
-      this.columnsChangedEvent();
+      this.events.columnsChangedEvent();
       return;
     }
 
@@ -473,7 +301,7 @@ export abstract class GridState {
       });
     } else {
       // Синхронное
-      this.dataSource.recalcData(this.columnCollection, this.settings);
+      this.dataSource.recalcData();
       this.fetchData(new DataQuery(this._dataQueryCounter));
     }
   }
@@ -481,9 +309,8 @@ export abstract class GridState {
   // Принимаем данные извне
   public fetchData(query: DataQuery, data: any[] = null, totalRowCount: number = null) {
 
-    if (this.lazy) {
-      this._lazyLoader.fetch(data, this.settings, query, this.dataSource, totalRowCount);
-      this.dataSource.accomplishFetch(this.dataSource.model, this.columnCollection, this.settings);
+    if (this.settings.lazyLoading !== LazyLoadingMode.NONE) {
+      this.lazyLoader.fetch(data, query, totalRowCount);
     } else {
       // Если счетчик не совпадает, то позднее был новый запрос. И в этих данных смысла
       // уже нет
@@ -492,56 +319,39 @@ export abstract class GridState {
       }
       if (data !== null) {
           // Если данные пересчитаны извне..
-          this.dataSource.fetchData(data, this.columnCollection, this.settings, totalRowCount);
+          this.dataSource.fetchData(data, totalRowCount);
       }
     }
 
     // Обновить нужно. Потому что уровни дерева могли поменяться
     this.updateLayouts();
     // Обновляем галки колонок
-    this.updateCheckColumns();
+    this.check.updateCheckColumns();
     // Обновляем индексы строк выделенных областей
-    this.updateSelectionIndices('fetch');
+    this.layoutsHandler.updateSelectionIndices();
     // Отправляем информацию о том, что данные получены
-    this.dataFetchEvent(query);
+    this.events.dataFetchEvent(query);
   }
 
   // Обновляем отображаемые данные в основном компоненте
   protected queryChanged() {
     // Генерируем событие о необходимости обновления данных
     // Проверяем ленивую загрузку с флагом сбрасывания данных
-    if (!this.checkLazy(0, this.st.lazyLoadingPageSize, true)) {
-      this.queryChangedEvent(this.getQuery());
-    }
+    //if (!this.lazyLoader.query(0, true)) {
+      // Если не ленивая загрузка, то как всегда.
+      // Иначе ленивая загрузка сама отправит данные
+      this.events.queryChangedEvent(this.dataSource.getQuery());
+    //}
+    // вроде как здесь не нужна эта тема с ленивой загрузкой, т.к. при
+    // updateData всё происходит
   }
 
-  // Значение выбранной ячейки
-  public focusedValue(c: Column): any {
-    let v = null;
-    if (this.focusedRow) {
-      v = this.focusedRow[c.fieldName];
-    }
-    return v;
-  }
-
-  // Один из дочерних компонентов говорит нам, что что-то тащится.
-  // Передаем заинтересованным слушателям
-  public drag(e: UIAction) {
-    this.dragEvent(e);
-  }
-
-  // Один из дочерних компонентов говорит нам, что что-то брошено.
-  // Передаем заинтересованным слушателям
-  public drop(e: UIAction) {
-    this.dropEvent(e);
+  // Делаем так, чтобы ничего не было выделено
+  public clearSelection() {
+    this.selection.clearAll();
   }
 
   // -- LAYOUTS ----------------------------------------------------------------
-  // Список частей компонента (Левая зафиксированная, основная центральная, правая)
-  get layouts(): Array<GridLayout> {
-    return [this.layout];
-  }
-
   // Обновление состояния дочерних компонентов
   public updateLayouts() {
 
@@ -557,9 +367,9 @@ export abstract class GridState {
       this.st.levelIndent,
       this.clientWidth, l === this.layout && this.st.columnAutoWidth));
 
-    // Это для нас обновление сопутствюущих дел
+    // Это для нас обновление сопутствующих дел
     this.resizeLayouts();
-    this.updateLayoutSelections();
+    this.layoutsHandler.updateLayoutSelections();
   }
 
   protected resizeLayouts() {
@@ -567,13 +377,11 @@ export abstract class GridState {
       this.clientWidth, l === this.layout && this.st.columnAutoWidth));
   }
 
-  // -- ФИЛЬТРЫ ----------------------------------------------------------------
-
   // Фильтр
   public showFilter(e: any, c: Column) {
     let f =  this.dataSource.getFilter(c);
-    f = f ? f.clone(true) : c.createFilter(this.focusedValue(c));
-    this.filterShowEvent(new FilterShowEvent(e.target, f));
+    f = f ? f.clone(true) : c.createFilter(this.selection.focusedValue(c));
+    this.events.filterShowEvent(new FilterShowEvent(e.target, f));
   }
 
   // Установка фильтра
@@ -588,8 +396,6 @@ export abstract class GridState {
       this.queryChanged();
     }
   }
-
-  // -- SORTING ----------------------------------------------------------------
 
   /**
    * Data sorting
@@ -641,13 +447,13 @@ export abstract class GridState {
   public resizeColumn(col: Column, newWidth: number) {
     col.width = newWidth;
     this.updateLayouts();
-    this.columnsChangedEvent();
+    this.events.columnsChangedEvent();
   }
 
   public hideColumn(col: Column) {
     col.visible = false;
     this.updateLayouts();
-    this.columnsChangedEvent();
+    this.events.columnsChangedEvent();
   }
 
   // Чиним состояние после drag-n-drop
@@ -657,7 +463,7 @@ export abstract class GridState {
   public reorderBand(targetBand: ColumnBand, dropInfo: any) {
     if (this.columnCollection.reorderBand(targetBand, dropInfo)) {
       this.updateLayouts();
-      this.columnsChangedEvent();
+      this.events.columnsChangedEvent();
     }
   }
 
@@ -665,72 +471,8 @@ export abstract class GridState {
   public reorderColumn(target: Column, dropInfo: any, commit: boolean = true) {
     if (this.columnCollection.reorderColumn(target, dropInfo)) {
       this.updateLayouts();
-      this.columnsChangedEvent();
+      this.events.columnsChangedEvent();
     }
-  }
-
-  // Настройка компонента для визуализации перетаскиваемого заголовка столбца
-  setDragItem(e: UIAction) {
-
-    this.disabledFields.splice(0, this.disabledFields.length);
-
-    if (e.target instanceof Column) {
-      const newCol = new Column((<Column>e.target).fieldName, e.target.caption, e.targetWidth, ColumnType.STRING, '');
-      newCol.allowFilter = true;
-      newCol.fixed = GridPart.DRAG_ITEM;
-      this.disabledFields.push(newCol.fieldName);
-      this.layoutDrag.update([newCol], this.st.widthUnit, this.st.levelIndent, 300, false);
-    } else {
-      if (e.target instanceof ColumnBand) {
-        // Вознамерились перетащить бэнд
-        const band = <ColumnBand>e.target;
-        const newCol = new Column('', band.caption, e.targetWidth, ColumnType.STRING, '');
-        newCol.fixed = GridPart.DRAG_ITEM;
-        // Все колонки окрасятся в серый цвет на время перетаскивания
-        band.columns.forEach(c => this.disabledFields.push(c.fieldName));
-        this.layoutDrag.update([newCol], this.st.widthUnit, this.st.levelIndent, 300, false);
-      } else {
-        // Строка?
-        // Первые 4 колонки?
-        const dragColumns: any[] = [];
-        for (let i = 0; i < this.columns.length; i++) {
-          const col = this.columns[i];
-          if (!col.visible) {
-            continue;
-          }
-          const dCol = col.clone();
-          dCol.fixed = GridPart.DRAG_ITEM;
-          dragColumns.push(dCol);
-
-          if (dragColumns.length > 3) {
-            break;
-          }
-        }
-
-        this.layoutDrag.update(dragColumns, this.st.widthUnit, this.st.levelIndent);
-
-        // Колонки добавлены
-        // Теперь строки...
-        // 1. Сфокусированная
-        if (this.isRowChecked(this.focusedRow)) {
-          // Берем все выделенные строки
-          e.target = [];
-          this.dataSource.resultRows.forEach(r => {
-            if (this.isRowChecked(r) && !r.__ax_isGroup) {
-              e.target.push(r);
-            }
-          });
-        } else {
-          e.target = [this.focusedRow];
-        }
-      }
-    }
-  }
-
-  // Очистка компонента для визуализации перетаскиваемого заголовка столбца
-  public clearDragItem() {
-    this.disabledFields.splice(0, this.disabledFields.length);
-    this.layoutDrag.update([]);
   }
 
   // -- PAGING -----------------------------------------------------------------
@@ -745,410 +487,13 @@ export abstract class GridState {
     this.pageInfo.limit = limit;
   }
 
-  public columnByFieldName(fieldName: string): Column {
-    return this.columnCollection.columnByFieldName(fieldName);
-  }
-
-  // -- EDIT -------------------------------------------------------------------
-  /**
-   * Проверка возможности редактирования заданной ячейки
-   * @param  cp Позиция ячейки
-   * @return    Можно ли редактировать
-   */
-  protected canEditCell(cp: CellPosition): boolean {
-    if (!cp) {
-      return false;
-    }
-
-    const col: Column = this.columnByFieldName(cp.fieldName);
-
-    if (col.isCheckbox) {
-      return false;
-    }
-
-    return this.st.canEditColumnCell(col);
-  }
-
-  /**
-   * Проверка возможности переключения чекбокса (ColumnType.CHECKBOX и
-   * ColumnType.BOOLEAN с возможностью изменения)
-   * @param  cp Позиция ячейки
-   * @return    Можно переключить или нельзя
-   */
-  public canToggleCheck(cp: CellPosition): boolean {
-
-    if (!cp) {
-      return false;
-    }
-
-    // Определяем колонку
-    const col: Column = this.columnCollection.columnByFieldName(cp.fieldName);
-    const canEdit = this.settings.editorShowMode !== EditorShowMode.NONE && col.allowEdit;
-    if (col && (col.isCheckbox || (col.isBoolean && canEdit))) {
-      return true;
-    }
-
-    // Не. Нечего переключать
-    return false;
-  }
-
-  /**
-   * Обработка события mousedown. Возможно, необходимо включить редактор
-   * @param  cp          Позиция
-   * @return             Если true, то событие обработано, дальнейшая обработка не требуется
-   */
-  public mouseDown(cp: CellPosition, touch: boolean = false, button: number = 0): boolean {
-
-    // Если планируется переключение чекбокса, то выходим из процедуры
-    if (this.st.checkByCellClick && this.canToggleCheck(cp)) {
-      // Не начинаем выделение
-      return true;
-    }
-
-    // Включение редактора при EditorShowMode.ON_MOUSE_DOWN
-    if (this.st.editorShowMode === EditorShowMode.ON_MOUSE_DOWN && this.editor === null) {
-      this.selection.focusedCell = null;
-      this.selection.startSelect(cp, false);
-      return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Click event handling. Toggle cell checkbox.
-   * @param  cp         Cell position
-   * @return            Has event been handled
-   */
-  public click(cp: CellPosition): boolean {
-    if (this.st.checkByCellClick && this.canToggleCheck(cp)) {
-      this.toggleCheck(cp.row, cp.fieldName);
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Отработка события DblClick. Включение редкатора по EditorShowMode.ON_DBL_CLICK
-   * @param  e Параметры события
-   * @param  r Строка, по которой был даблклик
-   */
-  public dblClick(e: any, r: any) {
-    if (this.selection.isSingleCellSelected()) {
-      if (this.st.editorShowMode === EditorShowMode.ON_DBL_CLICK) {
-        this.startEditing(this.focusedCell);
-      }
-    }
-  }
-
-  // Начало редактирования
-  public startEditing(cp: CellPosition, keyEvent: any = null): boolean {
-    if (this.canEditCell(cp)) {
-      this.setEditor(cp.clone(), false, keyEvent);
-      return true;
-    }
-    return false;
-  }
-
-  // Окончание редактирования
-  public stopEditing(cp: CellPosition, returnFocus: boolean = false, cancelChanges: boolean = false) {
-    if (cp !== null && cp.equals(this.editor)) {
-      this.setEditor(null, returnFocus, '', cancelChanges);
-    }
-  }
-
-  /**
-   * Проверка видимости строки после изменения значения одного из полей
-   * @param  r         Измененная строка
-   * @param  fieldName Наименование поля
-   * @return           Необходим ли перезапрос данных
-   */
-  protected checkDataUpdateNeed(r: any, fieldName: string): boolean {
-    if (this.dataSource.checkDataUpdateNeed(r, fieldName, this.columnCollection)) {
-      this.queryChanged();
-      return true;
-    }
-    return false;
-  }
-
-  public cellPosition(row: any, rowIndex: number, fieldName: string) {
-    return this.selection.cellPosition(row, rowIndex, fieldName, this.settings.keyField);
-  }
-
-  // Подтверждение нового значения ячейки после редактирования
-  public commitEditor(row: any, fieldName: string, value: any): boolean {
-
-    // Останавливаем редактор
-    this.stopEditing(this.editor, true);
-
-    // Значение не изменилось
-    if (this.dataSource.value(row, fieldName) === value) {
-      return false;
-    }
-
-    // Индекс строки здесь не важен
-    if (this.canEditCell(this.cellPosition(row, -1, fieldName))) {
-      const rowData = this.dataSource.updateValue(row, fieldName, value);
-      this.checkDataUpdateNeed(rowData, fieldName);
-      this.valueChangedEvent(new ValueChangedEvent(rowData, fieldName));
-      return true;
-    }
-    return false;
-  }
-
-
-  // -- SELECTION --------------------------------------------------------------
-  // Изменение выделенной области
-  protected selectionChanged(cp: CellPosition) {
-    this.updateLayoutSelections(cp);
-    this.selectEvent(cp);
-  }
-
   // Фокус сместился
   protected focusChanged(cp: CellPosition) {
     if (this.st.editorShowMode === EditorShowMode.ON_MOUSE_DOWN) {
-      this.stopEditing(this.editor, cp !== null);
-      this.startEditing(cp);
+      this.ui.stopEditing(this.ui.editor, cp !== null);
+      this.ui.startEditing(cp);
     } else {
-      this.stopEditing(this.editor, cp !== null);
-    }
-  }
-
-  // Пользователь начинает выделять ячейки - MouseDown
-  public startAction(cp: CellPosition, ctrl: boolean = false, byTouch: boolean = false, button: number = 0): UIActionType {
-
-    if (this.focusedCell != null &&
-        this.focusedCell.equals(cp) &&
-        this.st.editorShowMode === EditorShowMode.ON_CLICK_FOCUSED &&
-        byTouch
-     ) {
-      // Только для touch делаем это при начале выделения.
-      this.startEditing(cp);
-      return null;
-    }
-
-    if (!cp || cp.fieldName === '') {
-      // Не попали в ячейку
-      return null;
-    }
-
-    if (button === 2 && this.isSelected(cp)) {
-      // Контекстное меню лучше вызовем
-      this.selection.focusedCell = cp;
-      this.selectionChanged(cp);
-      return null;
-    }
-
-    // Сохраняем текущий фокус
-    this._prevFocused = this.focusedCell === null ? null : this.focusedCell.clone();
-    this.startSelect(cp, ctrl && this.st.multiSelect);
-    return UIActionType.SELECT;
-  }
-
-  /**
-   * Start selecting cells
-   * @param  cp   Cell position
-   * @param  add
-   */
-  public startSelect(cp: CellPosition, add: boolean = false) {
-    this.selection.startSelect(cp, add);
-  }
-
-  // Пользователь продолжает выделять ячейки (MouseMove)
-  public proceedToSelect(cp: CellPosition): boolean {
-    if (this.st.editorShowMode === EditorShowMode.ON_MOUSE_DOWN) {
-      // Включен редактор, не расширяем из него выделение
-      if (this.editor && this.editor.equals(this.focusedCell)) {
-        return false;
-      }
-    }
-    // Продолжить выделение можно только в некоторых режимах при
-    // отсутствии настройки перетаскивания строки
-    if (this.st.rowDrag) {
-      return false;
-    }
-
-    if (this.st.selectionMode !== SelectionMode.RANGE &&
-       this.st.selectionMode !== SelectionMode.ROW_AND_RANGE) {
-       return false;
-     }
-    // Можно..
-    if (this.selection.proceedToSelect(cp)) {
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * The user has finished selecting the cells (MouseUp)
-   * @param  cp      Cell RowPosition
-   * @param  byTouch Selection took place in touch events
-   * @param  button  Левая или правая кнопка мыши
-   */
-  public endSelect(cp: CellPosition, byTouch: boolean = false, button: number = 0) {
-
-    // Check duplicates
-    this.selection.endSelect(this.settings.selectionMode);
-
-    // Commit the changes, start editing if necessary
-    if (this.selection.focusedCell !== null) {
-      if (this.st.editorShowMode === EditorShowMode.ON_FOCUS &&
-          this.selection.isSingleCellSelected() &&
-          button === 0) {
-        this.startEditing(cp);
-        return;
-      }
-      if (this.st.editorShowMode === EditorShowMode.ON_CLICK_FOCUSED &&
-         this.focusedCell.equals(this._prevFocused) &&
-         this.focusedCell.equals(cp) &&
-         button === 0 &&
-         !byTouch
-       ) {
-        this.startEditing(cp);
-        return;
-      }
-    }
-  }
-
-  /**
-   * Return the column index in the column list by field name
-   * @param  fieldName Name of the field to be searched
-   * @return           Column index
-   */
-  public columnIndex(fieldName: string): number {
-    return GridLayout.columnIndex(this.layouts, fieldName);
-  }
-
-  public isSelected(pos: CellPosition): boolean {
-
-    if (!pos || pos.rowIndex < 0) {
-      return false;
-    }
-
-    const ii = this.columnIndex(pos.fieldName);
-    for (const range of this.selection.ranges) {
-
-      if (pos.rowIndex < range.fromRow) {
-        continue;
-      }
-
-      if (pos.rowIndex > range.toRow) {
-        continue;
-      }
-
-      let i1 = this.columnIndex(range.fromField);
-      let i2 = this.columnIndex(range.toField);
-
-      if (range.fromRow === range.toRow && i1 === i2) {
-        // Одна ячейка
-        if (this.st.selectionMode === SelectionMode.ROW ||
-            this.st.selectionMode === SelectionMode.ROW_AND_RANGE) {
-          // Значит выделена вся строка
-          return true;
-        }
-      }
-
-      if (i2 < i1) {
-        const t = i1; i1 = i2; i2 = t;
-      }
-
-      if (ii >= i1 && ii <= i2) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  // Обновление выделенных областей для дочерних компонентов
-  public updateLayoutSelections(scrollToCell: CellPosition = null) {
-
-    this.layouts.forEach(l => l.selection.clear());
-
-    if (this.st.selectionMode === SelectionMode.NONE) {
-      return;
-    }
-
-    const A = 0;
-    const B = A + this.layout.columns.length;
-    const C = B;
-
-    for (const range of this.selection.ranges) {
-
-      if (range.fromCell.rowIndex < 0) {
-        return null;
-      }
-
-      let fromIndex = this.columnIndex(range.fromCell.fieldName);
-      let toIndex = -1;
-
-      if (range.toCell) {
-        toIndex = this.columnIndex(range.toCell.fieldName);
-      }
-
-      if (toIndex >= 0 && toIndex < fromIndex) {
-        const t = toIndex; toIndex = fromIndex; fromIndex = t;
-      }
-
-      if (toIndex === -1) {
-        // С этим надо что-то делать
-        if (this.st.selectionMode !== SelectionMode.ROW &&
-            this.st.selectionMode !== SelectionMode.ROW_AND_RANGE) {
-             range.toCell = range.fromCell;
-             toIndex = fromIndex;
-        }
-      }
-
-      // Центр
-      if (fromIndex < B  || toIndex  === -1) {
-        let centerRange;
-        if (toIndex < 0) {
-          // вся строка
-          centerRange = new GridLayoutRange(range.fromCell.rowIndex, 0);
-          centerRange.rangeX = B - A - 1;
-          centerRange.rangeY = 0;
-        } else {
-          centerRange = new GridLayoutRange(range.fromCell.rowIndex, fromIndex - A);
-
-          if (toIndex < B) {
-            centerRange.rangeX = toIndex - fromIndex;
-          } else {
-            centerRange.rangeX = B - fromIndex - 1;
-          }
-          centerRange.rangeY = range.toCell.rowIndex - range.fromCell.rowIndex;
-        }
-        this.layout.selection.ranges.push(centerRange);
-      }
-    }
-
-    // Focused cell
-    if (this.selection.focusedCell) {
-      const ii = this.columnIndex(this.selection.focusedCell.fieldName);
-      if (ii >= A && ii < B) {
-        this.layout.selection.focusedRowIndex = this.selection.focusedCell.rowIndex;
-        this.layout.selection.focusedColumnIndex = ii - A;
-      } else {
-        this.layout.selection.focusedRowIndex = -1;
-      }
-    } else {
-      this.layout.selection.focusedRowIndex = -1;
-      this.layout.selection.focusedColumnIndex = -1;
-    }
-    return scrollToCell;
-  }
-
-  // Делаем так, чтобы ничего не было выделено
-  public clearSelection() {
-    this.selection.clearAll();
-  }
-
-  // Обновление индексов строк в списке выделенных областей
-  public updateSelectionIndices(s: string = '') {
-    let changed = false;
-    changed = this.selection.updateSelectionIndices(this.dataSource.model, this.dataSource.resultRows, this.settings.keyField);
-    this.updateLayoutSelections();
-    if (changed) {
-      this.selectEvent(null);
+      this.ui.stopEditing(this.ui.editor, cp !== null);
     }
   }
 
@@ -1188,133 +533,9 @@ export abstract class GridState {
     return false;
   }
 
-  /**
-   * Поиск первой колонки, в которой есть чекбокс.
-   * @param  forEdit Поиск только редактируемых полей (dataType = ColumnType.BOOLEAN)
-   * @return         Найденная колонка или null, если ничего не найдено
-   */
-  public firstCheckableField(forEdit: boolean = true): string {
-
-    if (forEdit && this.focusedCell) {
-      const col: Column = this.columnCollection.columnByFieldName(this.focusedCell.fieldName);
-      if (col && col.type === ColumnType.BOOLEAN) {
-        return col.fieldName;
-      }
-    }
-
-    for (let i = 0; i < this.layouts.length; i++) {
-      const l = this.layouts[i];
-      const c = l.columns.find(col => col.isCheckbox);
-      if (c) {
-        return c.fieldName;
-      }
-    }
-    return null;
-  }
-
-  public firstCheckboxField(): string {
-    return this.firstCheckableField(false);
-  }
-
-  public isRowChecked(r: any): boolean {
-    const f = this.firstCheckboxField();
-    return f && r[f];
-  }
-
-  // Обработка нажатия клавиши
-  public processKey(
-    pageCapacity: { upRowCount: number, downRowCount: number },  // Емкость предыдущей и следующей страниц
-    keyEvent: any
-  ): boolean {
-    // При нажатии ENTER или символьной клавиши - включаем редактор
-    if ((keyEvent.keyCode === Keys.ENTER || Keys.keyChar(keyEvent).length === 1)
-        && this.canEditCell(this.focusedCell)
-        && this.settings.editorByKey) {
-      if (this.startEditing(this.focusedCell, keyEvent)) {
-        // Обработали
-        return true;
-      }
-    }
-
-    // Дальше, всё, что мы еще можем обработать - это работа с выделенными областями
-    const res = this.selection.move(this.layouts, this.settings, this.dataSource.resultRows, pageCapacity, keyEvent);
-
-    if (res !== null) {
-      return true;
-    }
-
-    // Всё-таки, клавиша не пригодилась
-    return false;
-  }
-
-  // -- CHECKBOXES -------------------------------------------------------------
-  // Пользователь переключает галку в группе или строке
-  public toggleCheck(row: any, fieldName: string, v: boolean = undefined) {
-    const col: Column = this.columnCollection.columnByFieldName(fieldName);
-    if (col && col.type !== ColumnType.CHECKBOX) {
-      this.commitEditor(row, fieldName, !row[fieldName]);
-      return;
-    }
-
-    if (v !== undefined) {
-      if (row[fieldName] !== v) {
-        row[fieldName] = v;
-        this.updateCheckColumns(fieldName);
-        // Сигнализируем о том, что нужно проверить изменения
-        this.valueChangedEvent(new ValueChangedEvent(row, fieldName));
-        this.checkedChangedEvent(new CheckedChangedEvent('row', row, fieldName, v));
-      }
-    } else {
-      row[fieldName] = !row[fieldName];
-      this.updateCheckColumns(fieldName);
-      // Сигнализируем о том, что нужно проверить изменения
-      this.valueChangedEvent(new ValueChangedEvent(row, fieldName));
-      this.checkedChangedEvent(new CheckedChangedEvent('row', row, fieldName, row[fieldName]));
-    }
-  }
-
-  public setColumnCheck(col: Column, value: boolean) {
-    //
-    col.setChecked(value);
-    this.dataSource.resultRows.forEach(r => r[col.fieldName] = value);
-    this.checkedChangedEvent(new CheckedChangedEvent('column', null, col.fieldName, value));
-    this.queryChanged();
-  }
-
-  // Пользователь переключает галку в заголовке столбца
-  public toggleCheckColumn(col: Column) {
-    let newValue = true;
-    if (col.isChecked || col.isChecked === null) {
-      newValue = false;
-    }
-    this.setColumnCheck(col, newValue);
-  }
-
-  // Обновление зависимых галок (чекбоксов) в гриде
-  public updateCheckColumns(fieldName: string = null) {
-    this.columns.forEach(col => {
-      if (col.type === ColumnType.CHECKBOX && (fieldName === null || col.fieldName === fieldName)) {
-        let allChecked = true;
-        let allNotChecked = true;
-        this.dataSource.resultRows.forEach(r => {
-          if (r[col.fieldName]) {
-            allNotChecked = false;
-          } else {
-            allChecked = false;
-          }
-        });
-        if (this.dataSource.resultRowCount === 0) {
-          // Если ни одной записи нет, то состояние "Выключено"
-          allChecked = false;
-        }
-        col.setChecked((allChecked && allNotChecked || !allChecked && !allNotChecked) ? null : allChecked);
-      }
-    });
-  }
-
   // -- HEADER CONTEXT MENU ----------------------------------------------------
   public headerContextMenu(e: any, column: Column) {
-    this.headerContextMenuEvent(e, column);
+    this.events.headerContextMenuEvent({originalEvent: e, column: column});
   }
 
   // -- SUMMARIES --------------------------------------------------------------
@@ -1324,22 +545,22 @@ export abstract class GridState {
   // Добавляет суммирование
   public addSummary(column: Column, t: SummaryType) {
     column.addSummary(t);
-    this.summariesChangedEvent(column);
+    this.events.summariesChangedEvent(column);
   }
 
   // Заменяет суммирование
   public setSummary(column: Column, t: SummaryType, a: Summary = null) {
     column.setSummary(t, a);
-    this.summariesChangedEvent(column);
+    this.events.summariesChangedEvent(column);
   }
 
   // -- ROW DRAG ---------------------------------------------------------------
   public canDrop(draggedRows: any[], dropRow: any, dropPos: string): string {
-    return this.dataSource.canDrop(draggedRows, dropRow, dropPos, this.settings);
+    return this.dataSource.canDrop(draggedRows, dropRow, dropPos);
   }
 
   public moveRows(draggedRows: any[], dropTarget: any, dropPos: string) {
-    this.dataSource.moveRows(draggedRows, dropTarget, dropPos, this.settings);
+    this.dataSource.moveRows(draggedRows, dropTarget, dropPos);
     this.updateData();
   }
 
@@ -1353,61 +574,48 @@ export abstract class GridState {
       this.dataSource.resultRows, this.dataSource.valueFormatter);
   }
 
-  // -- Data to export
-  public dataToExport(): GridExporter {
-
+  public selectAll(sel: Selection): Selection {
     const firstCol = GridLayout.firstColumn(this.layouts);
     const lastCol = GridLayout.lastColumn(this.layouts);
-
     const rr = this.dataSource.resultRows;
 
-    const sel = new Selection();
     sel.startSelect(new CellPosition(rr[0], 0, firstCol.fieldName));
     sel.proceedToSelect(new CellPosition(rr[rr.length - 1], rr.length - 1, lastCol.fieldName), false);
+    return sel;
+  }
 
+  // -- Data to export
+  public dataToExport(): GridExporter {
     return GridExporter.dataToExport(
-      this.layouts, sel, SelectionMode.RANGE,
+      this.layouts, this.selectAll(new Selection()), SelectionMode.RANGE,
       this.dataSource.resultRows, this.dataSource.valueFormatter);
+  }
+
+  // -- CUSTOM CELL EVENTS -----------------------------------------------------
+  public emitCustomCellEvent(e: any) {
+    this.events.customCellEvent(e);
   }
 
   public abstract copySelectionToClipboard(withColumns: boolean): void;
   public abstract exportToCSV(fileName: string): void;
 
-  // -- CUSTOM CELL EVENTS -----------------------------------------------------
-  public emitCustomCellEvent(e: any) {
-    this.customCellEvent(e);
+  protected registerHandlers() {
+    this.handlers = {
+      'settings': GridSettings,
+      'columns': ColumnCollection,
+      'selection': Selection,
+      'dataSource': DataSource,
+      'check': GridCheckHandler,
+      'ui': GridUIHandler,
+      'lazyLoader': GridLazyLoadHandler,
+      'dragDrop': GridDragHandler,
+      'layouts': LayoutsHandler
+    };
   }
 
-  protected customCellEvent(e: any): void {
-    //
+  constructor() {
+    super();
+    this.registerHandlers();
+    this.updateInjections();    
   }
-
-  // -- EVENTS -----------------------------------------------------------------
-  protected abstract dataQueryEvent(query: DataQuery): void;
-
-  protected abstract dataFetchEvent(q: DataQuery): void;
-
-  protected abstract columnsChangedEvent(): void;
-
-  protected abstract queryChangedEvent(q: DataQuery): void;
-
-  protected abstract summariesChangedEvent(c: Column): void;
-
-  protected abstract valueChangedEvent(e: ValueChangedEvent): void;
-
-  protected abstract checkedChangedEvent(e: CheckedChangedEvent): void;
-
-  protected abstract dragEvent(e: UIAction): void;
-
-  protected abstract dropEvent(e: UIAction): void;
-
-  protected abstract columnResizeEvent(e: UIAction): void;
-
-  protected abstract filterShowEvent(e: FilterShowEvent): void;
-
-  protected abstract selectEvent(cp: CellPosition): void;
-
-  protected abstract startEditingEvent(cp: CellPosition): void;
-
-  protected abstract stopEditingEvent(returnFocus: boolean): void;
 }

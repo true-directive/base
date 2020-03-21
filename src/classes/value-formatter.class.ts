@@ -6,11 +6,11 @@
 import { ColumnType } from './enums';
 import { Column } from './column.class';
 
-import { Locale } from './internationalization/locale.class';
-import { Mask } from './mask/mask.class';
-import { NumberFormat } from './numbers/number-format.class';
-import { NumberParserFormatter } from './numbers/number-parser-formatter.class';
-import { DateParserFormatter } from './dates/date-parser-formatter.class';
+import { Locale } from '../internationalization/locale.class';
+import { Mask } from '../mask/mask.class';
+import { NumberFormat } from '../numbers/number-format.class';
+import { NumberParserFormatter } from '../numbers/number-parser-formatter.class';
+import { DateParserFormatter } from '../dates/date-parser-formatter.class';
 
 /**
  * Форматирование числовых значений и дат/времени для вывода в гриде
@@ -30,9 +30,6 @@ export class ValueFormatter {
   public setLocale(locale: Locale) {
 
     this._locale = locale;
-
-    // this._separators[0] = locale.separators[0];
-    // this._separators[1] = locale.separators[1];
 
     for (const fmt in this._dateFormats) {
       if (this._dateFormats.hasOwnProperty(fmt)) {

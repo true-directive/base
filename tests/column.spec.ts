@@ -1,7 +1,7 @@
-import { ColumnType } from '../src/enums';
-import { Column } from '../src/column.class';
-import { Filter, FilterOperator } from '../src/filter.class';
-import { SummaryType } from '../src/summary.class';
+import { ColumnType } from '../src/classes/enums';
+import { Column } from '../src/classes/column.class';
+import { Filter, FilterOperator } from '../src/classes/filter.class';
+import { SummaryType } from '../src/classes/summary.class';
 
 describe(`Column`, () => {
   const col = new Column('name');

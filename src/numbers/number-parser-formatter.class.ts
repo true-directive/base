@@ -33,7 +33,7 @@ export class NumberParserFormatter {
     }
 
     return {
-      prefix: prefix, 
+      prefix: prefix,
       number: number,
       postfix: postfix
     };

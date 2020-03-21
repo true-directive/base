@@ -44,22 +44,6 @@ export class RowLayout {
     return null;
   }
 
-  /*
-  protected static isSameLevel(r1: any, r2: any) {
-    const l1 = r1.rowComponent.row.level;
-    const l2 = r2.rowComponent.row.level;
-    if (isNaN(l1) && isNaN(l2)) {
-      return true;
-    }
-
-    if (l1 === l2) {
-      return true;
-    }
-    return false;
-  }
-  */
-
-
   /**
    * Поиск позиции строки для вставки
    * @param  rows Список разметок строк
@@ -109,23 +93,6 @@ export class RowLayout {
         }
       }
 
-      /*
-      if (y >= yy && y < (yy + h2)) {
-        if (prev && RowLayout.isSameLevel(prev, rl)) {
-          // ПОДМЕНА
-          return { rl: prev, rl_hover: rl, pos: 'after' };
-        }
-        return { rl: rl, rl_hover: rl, pos: 'before' };
-      }
-
-      if (y >= (yy + h2) && y < (yy + hh)) {
-        return { rl: rl, rl_hover: rl, pos: 'after' };
-      }
-
-      if (i === (rows.length - 1) && y >= (yy + hh)) {
-        return { rl: rl, rl_hover: null, pos: 'last' };
-      }
-      */
       prev = rl;
     }
     return { rl: null, rl_hover: null, pos: '' };

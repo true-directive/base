@@ -8,24 +8,23 @@ import { FilterOperator, Filter } from './filter.class';
 import { Summary, SummaryType } from './summary.class';
 
 /**
-* Колонка грида. Содержит:
-*   - отображаемое поле,
-*   - текст заголовка,
-*   - тип данных,
-*   - заданную ширину колонки,
-*   - параметры расчета ширины для опции columnAutoWidth,
-*   - расчитанную ширину колонки (при включенной опции грида columnAutoWidth),
-*   - классы, используемые при генерации разметки,
-*   - наложенные фильтры,
-*   - итоги,
-*   - настройки, касающиеся колонок
+* Grid column. Contains:
+*   - data field,
+*   - caption,
+*   - data type,
+*   - column width,
+*   - width calc params for the columnAutoWidth option,
+*   - calculated column width  (when columnAutoWidth option is turned on),
+*   - css-classes for column cells
+*   - column summaries,
+*   - column settings
 */
 export class Column {
 
   /**
    * Сonstructor
-   * @param fieldName Отображаемое поле
-   * @param caption   Заголовок колонки. Если не задано, будет отображено
+   * @param fieldName Data field to display
+   * @param caption   Text for the column header. Если не задано, будет отображено
    * наименование поля.
    * @param width     Ширина (в заданных единицах измерения)
    * @param {ColumnType} dataType  Тип данных (see [[ColumnType]]).
@@ -38,7 +37,7 @@ export class Column {
     public caption: string = null,
     public width: number = 150,
     public type: ColumnType = ColumnType.STRING,
-    public band = '',
+    public band: string = '',
     public format = '') {
 
     if (this.caption === null)  {
@@ -76,7 +75,7 @@ export class Column {
    */
   public autoWidthFixed = false;
 
-  // -- Немного настроек -------------------------------------------------------
+  // -- Settings -------------------------------------------------------
 
   /**
    * Разрешено ли пользователю изменять ширину колонки

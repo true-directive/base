@@ -3,8 +3,8 @@
  * @link https://truedirective.com/
  * @license MIT
 */
-import { SortInfo, SortType  } from '../sort-info.class';
-import { Column  } from '../column.class';
+import { SortInfo, SortType  } from '../classes/sort-info.class';
+import { Column  } from '../classes/column.class';
 
 export class SortPipe {
 
