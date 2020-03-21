@@ -569,7 +569,7 @@ export class Selection {
   protected focusChangedEvent(cp: CellPosition): void { }
 
   public columnIndex(lc: Column[], fieldName: string): number {
-    const c = lc.find(c => c.fieldName === fieldName);
+    const c = lc.find(col => col.fieldName === fieldName);
     return lc.indexOf(c);
   }
 

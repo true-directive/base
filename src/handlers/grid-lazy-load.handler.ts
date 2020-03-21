@@ -161,7 +161,7 @@ export class GridLazyLoadHandler {
     if (st.lazyLoading === LazyLoadingMode.INCREMENTAL) {
       needToLoad = total === null || (needRows > loaded && loaded < total);
     } else {
-      needToLoad = loaded == 0;
+      needToLoad = loaded === 0;
       let i = offset - st.lazyLoadingThreshold;
       if (i < 0) {
         i = 0;
