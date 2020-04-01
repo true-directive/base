@@ -112,7 +112,7 @@ export abstract class GridState extends AxInjectConsumer {
 
   public set columns(v: Column[]) {
     this.columnCollection.columns = v;
-    this.setLayoutsVisibility();
+    this.layoutsHandler.setLayoutsVisibility();
     this.updateLayouts();
   }
 
@@ -224,15 +224,6 @@ export abstract class GridState extends AxInjectConsumer {
   protected _dataQueryCounter = 0;
 
   // ---------------------------------------------------------------------------
-
-  /**
-   * Visibility settings of grid's parts.
-   * Only the central part is present in current version.
-   * This method is supposed to be overriden in PRO-version.
-   */
-  public setLayoutsVisibility() {
-    // Single part. No action required.
-  }
 
   public checkClientWidth(v: number): boolean {
     if (this._clientWidth !== v) {
@@ -616,6 +607,6 @@ export abstract class GridState extends AxInjectConsumer {
   constructor() {
     super();
     this.registerHandlers();
-    this.updateInjections();    
+    this.updateInjections();
   }
 }

@@ -52,6 +52,10 @@ export class LayoutsHandler {
     this.selection.focusedCell = cp === null ? null : cp.clone();
   }
 
+  public setLayoutsVisibility() {
+    //
+  }
+
   /**
    * Gets column by field name
    * @param  f Field name
