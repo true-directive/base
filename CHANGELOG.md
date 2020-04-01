@@ -131,3 +131,9 @@
 
 - Refactoring.
 - Autowiring.
+
+## [1.4.1] - 2020-04-01
+
+### Fixed
+
+- Unnecessary layout updating when column move.
