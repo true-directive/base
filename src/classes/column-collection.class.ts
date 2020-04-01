@@ -123,14 +123,14 @@ export class ColumnCollection {
             Utils.moveArrayItem(this.columns, oldIndex - 1, newIndex);
             Utils.moveArrayItem(this.columns, oldIndex, newIndex + 1);
           }
+          update = true;
         } else {
           if (oldIndex < newIndex) {
             newIndex--;
           }
           Utils.moveArrayItem(this.columns, oldIndex, newIndex);
+          update = oldIndex != newIndex;
         }
-
-        update = true;
         return true;
       }
       return false;
