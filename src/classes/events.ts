@@ -1,8 +1,3 @@
-/**
- * Copyright (c) 2018-2019 Aleksey Melnikov, True Directive Company.
- * @link https://truedirective.com/
- * @license MIT
-*/
 import { CellPosition } from './cell-position.class';
 
 export class CancelableEvent {

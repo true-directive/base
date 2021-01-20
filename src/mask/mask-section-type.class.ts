@@ -1,8 +1,3 @@
-/**
- * Copyright (c) 2018-2019 Aleksey Melnikov, True Directive Company.
- * @link https://truedirective.com/
- * @license MIT
-*/
 export class MaskSectionType {
   public selectors: Array<string> = [];
   public numeric = false;

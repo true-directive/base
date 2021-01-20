@@ -1,8 +1,3 @@
-/**
- * Copyright (c) 2018-2019 Aleksey Melnikov, True Directive Company.
- * @link https://truedirective.com/
- * @license MIT
-*/
 import { ColumnType, GridPart } from './enums';
 import { FilterOperator, Filter } from './filter.class';
 import { Summary, SummaryType } from './summary.class';

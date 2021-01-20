@@ -1,9 +1,4 @@
 /**
- * Copyright (c) 2018-2019 Aleksey Melnikov, True Directive Company.
- * @link https://truedirective.com/
- * @license MIT
-*/
-/**
  * Custom framework-independent injection
  */
 export function AxInject(name?: string): Function {

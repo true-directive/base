@@ -97,6 +97,7 @@ export abstract class GridState extends AxInjectConsumer {
 
   public get settings(): GridSettings { return this._settings; }
   public get st(): GridSettings { return this._settings; } // Short alias
+  public get ds(): DataSource { return this.dataSource; }
   public get sta(): GridAppearance { return this.settings.appearance; } // Short alias
 
   /**
@@ -249,13 +250,13 @@ export abstract class GridState extends AxInjectConsumer {
    */
   protected recalcData(): Promise<void> {
     return new Promise((resolve) => {
-      this.dataSource.recalcData();
+      this.ds.recalcData();
       resolve();
     });
   }
 
   public getQuery(subject: any = null): DataQuery {
-    return this.dataSource.getQuery(++this._dataQueryCounter, subject);
+    return this.ds.getQuery(++this._dataQueryCounter, subject);
   }
 
   /**
@@ -292,7 +293,7 @@ export abstract class GridState extends AxInjectConsumer {
       });
     } else {
       // Синхронное
-      this.dataSource.recalcData();
+      this.ds.recalcData();
       this.fetchData(new DataQuery(this._dataQueryCounter));
     }
   }
@@ -310,7 +311,7 @@ export abstract class GridState extends AxInjectConsumer {
       }
       if (data !== null) {
           // Если данные пересчитаны извне..
-          this.dataSource.fetchData(data, totalRowCount);
+          this.ds.fetchData(data, totalRowCount);
       }
     }
 
@@ -331,7 +332,7 @@ export abstract class GridState extends AxInjectConsumer {
     //if (!this.lazyLoader.query(0, true)) {
       // Если не ленивая загрузка, то как всегда.
       // Иначе ленивая загрузка сама отправит данные
-      this.events.queryChangedEvent(this.dataSource.getQuery());
+      this.events.queryChangedEvent(this.ds.getQuery());
     //}
     // вроде как здесь не нужна эта тема с ленивой загрузкой, т.к. при
     // updateData всё происходит
@@ -370,20 +371,20 @@ export abstract class GridState extends AxInjectConsumer {
 
   // Фильтр
   public showFilter(e: any, c: Column) {
-    let f =  this.dataSource.getFilter(c);
+    let f =  this.ds.getFilter(c);
     f = f ? f.clone(true) : c.createFilter(this.selection.focusedValue(c));
     this.events.filterShowEvent(new FilterShowEvent(e.target, f));
   }
 
   // Установка фильтра
   public setFilter(f: Filter) {
-    this.dataSource.setFilter(f);
+    this.ds.setFilter(f);
     this.queryChanged();
   }
 
   // Очистка фильтра по заданной колонке
   public resetFilter(f: Filter) {
-    if (this.dataSource.removeFilter(f.fieldName)) {
+    if (this.ds.removeFilter(f.fieldName)) {
       this.queryChanged();
     }
   }
@@ -393,7 +394,7 @@ export abstract class GridState extends AxInjectConsumer {
    * @param  sortings List of sortings
    */
   public sort(sortings: SortInfo[], update: boolean = true) {
-    this.dataSource.sort(sortings);
+    this.ds.sort(sortings);
     if (update) {
       this.queryChanged();
     }
@@ -404,7 +405,7 @@ export abstract class GridState extends AxInjectConsumer {
    * @param  filter List of filters
    */
   public filter(filters: Filter[], update: boolean = true) {
-    this.dataSource.filter(filters);
+    this.ds.filter(filters);
     if (update) {
       this.queryChanged();
     }
@@ -419,7 +420,7 @@ export abstract class GridState extends AxInjectConsumer {
     if (!this.st.allowSorting) {
       return;
     }
-    this.dataSource.sortByColumn(col, add);
+    this.ds.sortByColumn(col, add);
     this.queryChanged();
   }
 
@@ -495,7 +496,7 @@ export abstract class GridState extends AxInjectConsumer {
 
   // Выделение заданной строки
   public locateRow(r: any): boolean {
-    const ri: number = this.dataSource.resultRows.indexOf(r);
+    const ri: number = this.ds.resultRows.indexOf(r);
     if (ri >= 0 ) {
       this.selectRow(r, ri);
       return true;
@@ -509,13 +510,13 @@ export abstract class GridState extends AxInjectConsumer {
       keyField = this.settings.keyField;
     }
 
-    if (this.dataSource.resultRowCount === 0) {
+    if (this.ds.resultRowCount === 0) {
       return false;
     }
 
-    const found = this.dataSource.resultRows.find(r => r[keyField] === keyValue);
+    const found = this.ds.resultRows.find(r => r[keyField] === keyValue);
     if (found) {
-      const ri: number = this.dataSource.resultRows.indexOf(found);
+      const ri: number = this.ds.resultRows.indexOf(found);
       if (ri >= 0 ) {
         this.selectRow(found, ri);
         return true;
@@ -531,7 +532,7 @@ export abstract class GridState extends AxInjectConsumer {
 
   // -- SUMMARIES --------------------------------------------------------------
   public updateSummaries() {
-    this.dataSource.summaries(this.columns);
+    this.ds.summaries(this.columns);
   }
   // Добавляет суммирование
   public addSummary(column: Column, t: SummaryType) {
@@ -547,11 +548,11 @@ export abstract class GridState extends AxInjectConsumer {
 
   // -- ROW DRAG ---------------------------------------------------------------
   public canDrop(draggedRows: any[], dropRow: any, dropPos: string): string {
-    return this.dataSource.canDrop(draggedRows, dropRow, dropPos);
+    return this.ds.canDrop(draggedRows, dropRow, dropPos);
   }
 
   public moveRows(draggedRows: any[], dropTarget: any, dropPos: string) {
-    this.dataSource.moveRows(draggedRows, dropTarget, dropPos);
+    this.ds.moveRows(draggedRows, dropTarget, dropPos);
     this.updateData();
   }
 
@@ -562,13 +563,13 @@ export abstract class GridState extends AxInjectConsumer {
   public getSelectedData(selection: Selection): GridExporter {
     return GridExporter.dataToExport(
       this.layouts, selection, this.st.selectionMode,
-      this.dataSource.resultRows, this.dataSource.valueFormatter);
+      this.ds.resultRows, this.ds.valueFormatter);
   }
 
   public selectAll(sel: Selection): Selection {
     const firstCol = GridLayout.firstColumn(this.layouts);
     const lastCol = GridLayout.lastColumn(this.layouts);
-    const rr = this.dataSource.resultRows;
+    const rr = this.ds.resultRows;
 
     sel.startSelect(new CellPosition(rr[0], 0, firstCol.fieldName));
     sel.proceedToSelect(new CellPosition(rr[rr.length - 1], rr.length - 1, lastCol.fieldName), false);
@@ -579,7 +580,7 @@ export abstract class GridState extends AxInjectConsumer {
   public dataToExport(): GridExporter {
     return GridExporter.dataToExport(
       this.layouts, this.selectAll(new Selection()), SelectionMode.RANGE,
-      this.dataSource.resultRows, this.dataSource.valueFormatter);
+      this.ds.resultRows, this.ds.valueFormatter);
   }
 
   // -- CUSTOM CELL EVENTS -----------------------------------------------------

@@ -137,3 +137,9 @@
 ### Fixed
 
 - Unnecessary layout updating when column move.
+
+## [1.4.2] - 2020-04-01
+
+### Added
+
+- Linting.

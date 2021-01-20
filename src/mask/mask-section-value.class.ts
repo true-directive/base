@@ -1,8 +1,3 @@
-/**
- * Copyright (c) 2018-2019 Aleksey Melnikov, True Directive Company.
- * @link https://truedirective.com/
- * @license MIT
-*/
 export class MaskSectionValue {
 
   public beforeChars: string;
@@ -25,19 +20,19 @@ export class MaskSectionValue {
     return this.value().length;
   }
 
-  constructor(sectionValue: string, sectionPos: number, selStart: number) {
+  constructor(value: string, sectionPos: number, selStart: number) {
 
     const selStart_local = selStart - sectionPos;
 
-    if (selStart_local < 0 || selStart_local > sectionValue.length) {
-      this.beforeChars = sectionValue;
+    if (selStart_local < 0 || selStart_local > value.length) {
+      this.beforeChars = value;
       this.currentChar = '';
       this.afterChars = '';
       return;
     }
 
-    this.beforeChars = sectionValue.substring(0, selStart_local);
-    this.currentChar = sectionValue.substring(selStart_local, selStart_local + 1);
-    this.afterChars = sectionValue.substring(selStart_local + 1);
+    this.beforeChars = value.substring(0, selStart_local);
+    this.currentChar = value.substring(selStart_local, selStart_local + 1);
+    this.afterChars = value.substring(selStart_local + 1);
   }
 }

@@ -1,10 +1,4 @@
 /**
- * Copyright (c) 2018-2019 Aleksey Melnikov, True Directive Company.
- * @link https://truedirective.com/
- * @license MIT
-*/
-
-/**
  * Тип данных
  */
 export enum ColumnType {

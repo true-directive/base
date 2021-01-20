@@ -1,9 +1,4 @@
 /**
- * Copyright (c) 2018-2019 Aleksey Melnikov, True Directive Company.
- * @link https://truedirective.com/
- * @license MIT
-*/
-/**
  * Позиция ячейки в гриде.
  * Строка и индекс строки нужны вместе, чтобы при сортировке или фильтрации
  * мы могли перезадать индекс.
