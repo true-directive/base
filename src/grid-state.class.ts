@@ -264,11 +264,12 @@ export abstract class GridState extends AxInjectConsumer {
    * @param  counter Query counter value
    * @param  subject Observer
    */
-  protected doQuery(subject: any = null) {
-    if (this.lazyLoader.query()) {
+  protected doQuery(subject: any = null, force: boolean = false) {
+    
+    if (this.lazyLoader.query(0, false, force)) {
       // Если запрос сделает ленивый загрузчик, то выходим
       return;
-    }
+    }    
     this.events.dataQueryEvent(this.getQuery());
   }
 
@@ -277,9 +278,18 @@ export abstract class GridState extends AxInjectConsumer {
    * @param  async Recalculation in the asynchronous thread.
    */
   public updateData(async: boolean = true) {
+
+    if (this.st.lazyLoading === LazyLoadingMode.FRAGMENTARY) { 
+      if (this.ds.totalRowCount > 0) {
+        // Force current page update
+        this.lazyLoader.query(this.pageInfo.offset, false, true);
+        return;
+      }
+    }
+
     if (this.settings.requestData || this.settings.lazyLoading !== LazyLoadingMode.NONE) {
       // Необходимо запросить данные
-      this.doQuery();
+      this.doQuery(null, true);
       // НО! Нужно обновить колонки.
       this.events.columnsChangedEvent();
       return;

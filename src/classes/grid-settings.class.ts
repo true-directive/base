@@ -11,7 +11,7 @@ import { MenuAction } from './menu-action.class';
 import { GridAppearance } from './grid-appearance.class';
 
 /**
- * Настройки грида.
+ * Grid settings
  */
 export class GridSettings {
 
@@ -85,17 +85,17 @@ export class GridSettings {
   public multiSelect = false;
 
   /**
-   * Перенос строки в заголовках
+   * Header's word wrap setting
    */
   public headerWordWrap = false;
 
   /**
-   * Перенос строки в данных
+   * Data cell's word wrap setting
    */
   public dataWordWrap = false;
 
   /**
-   * Высота строки в пикселах. Можно задать заведомо меньшую высоту, тогда
+  *  Data row height in pixels. Можно задать заведомо меньшую высоту, тогда
    * высота строки будет такой, чтобы уместить контент. Если высота задана,
    * то минимальная высота будет такой.
    */

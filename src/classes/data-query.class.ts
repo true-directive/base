@@ -25,6 +25,7 @@ export class DataQuery {
     public subject: any = null,
     public offset: number  = null,
     public limit: number = null,
-    public resetData: boolean = false
+    public resetData: boolean = false,
+    public forcedUpdate: boolean = false
   ) { }
 }

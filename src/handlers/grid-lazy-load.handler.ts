@@ -11,6 +11,7 @@ import { GridSettings } from '../classes/grid-settings.class';
 import { DataSource } from '../classes/data-source.class';
 
 import { IEvents } from '../events.interface';
+import { isLoweredSymbol } from '@angular/compiler';
 
 export class GridLazyLoadHandler {
 
@@ -31,10 +32,12 @@ export class GridLazyLoadHandler {
   private _lazyOffset_tmp: number = null;
   private _lazyLimit_tmp: number = null;
 
-  public query(offset: number = 0, reset: boolean = false): boolean {
+  
+  public query(offset: number = 0, reset: boolean = false, force: boolean = false): boolean {     
+
      if (this.settings.lazyLoading === LazyLoadingMode.NONE) {
        return false;
-     }
+     }     
 
      const limit = this.settings.lazyLoadingPageSize;
      const e = this.events;
@@ -44,25 +47,28 @@ export class GridLazyLoadHandler {
      this._lazyLimit_tmp = limit;
 
      const q = this.dataSource.getQuery();
+     q.forcedUpdate = force;
 
-     if (reset) {
+     if (reset) {       
        // Полное обновление, всё сразу делаем
-       const res = this.check(q, offset, limit, reset);
-       if (res) {
-         e.dataQueryEvent(q);
-       }
-       return res;
+        const res = this.check(q, offset, limit, reset);
+        if (res) {
+          this.start();
+          e.dataQueryEvent(q);
+        }
+        return res;
      }
 
      setTimeout(() => {
        // Антидребезг. Если до сих пор те же лимит и оффсет, то загружаем
-       if (this._lazyOffset_tmp === offset && this._lazyLimit_tmp === limit) {
+       if (force || (this._lazyOffset_tmp === offset && this._lazyLimit_tmp === limit)) {         
          const res = this.check(q, offset, limit, reset);
-         if (res) {
+         if (res && offset !== null && limit !== null) {          
+           this.start();
            e.dataQueryEvent(q);
          }
        }
-     }, st.lazyLoadingPause);
+     }, st.lazyLoadingPause);   
 
      return true;
   }
@@ -95,7 +101,8 @@ export class GridLazyLoadHandler {
     const ds = this.dataSource;
     const st = this.settings;
 
-    if (!ds.model || q.resetData) {
+    if (!ds.model || q.resetData || q.forcedUpdate) {
+      ds.lazyLoaded = 0;
       ds.model = [];
     }
 
@@ -154,40 +161,44 @@ export class GridLazyLoadHandler {
 
     const needRows = offset + limit + st.lazyLoadingThreshold;
     const total = ds.totalRowCount;
-    const loaded = reset ? 0 : ds.loadedRowCount;
+    const loaded = reset ? 0 : ds.loadedRowCount; 
 
     // Если фрагментарный, то нужно искать наличие дырок
     let needToLoad = false;
     if (st.lazyLoading === LazyLoadingMode.INCREMENTAL) {
       needToLoad = total === null || (needRows > loaded && loaded < total);
     } else {
+      // Если вообще ничего не загружено
       needToLoad = loaded === 0;
       let i = offset - st.lazyLoadingThreshold;
       if (i < 0) {
         i = 0;
       }
-      while (!needToLoad && i < (offset + limit)) {
-        const r = ds.model[i];
-        if (r === undefined || r.__ax === 'empty') {
-          offset = i;
-          needToLoad = true;
+      
+      if (q.forcedUpdate) {         
+        // When update is forced we have to reload the current page and some nearest rows        
+        needToLoad = true;                
+        offset = i;        
+      } else { 
+        while (!needToLoad && i < (offset + limit) && i < ds.totalRowCount) {
+          const r = ds.model[i];
+          if (r === undefined || r.__ax === 'empty') {
+            offset = i;
+            needToLoad = true;
+          }
+          i++;
         }
-        i++;
       }
     }
-
-    if (needToLoad) {
-
-      q.offset = st.lazyLoading === LazyLoadingMode.INCREMENTAL ? loaded : offset;
-      q.limit = st.lazyLoadingPageSize + st.lazyLoadingThreshold;
-      q.resetData = reset;
-      if ((q.offset + q.limit) > this._queriedTo || q.offset < this._queriedFrom) {
-        this._queriedFrom = q.offset;
-        this._queriedTo = q.offset + q.limit;
-        this.start();
-        return true;
-      }
+    
+    q.offset = st.lazyLoading === LazyLoadingMode.INCREMENTAL ? loaded : offset;
+    q.limit = st.lazyLoadingPageSize + st.lazyLoadingThreshold;
+    q.resetData = reset;
+    if ((q.offset + q.limit) > this._queriedTo || q.offset < this._queriedFrom) {
+      this._queriedFrom = q.offset;
+      this._queriedTo = q.offset + q.limit;        
     }
-    return false;
+
+    return needToLoad;
   }
 }
