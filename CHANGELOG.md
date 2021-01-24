@@ -143,3 +143,9 @@
 ### Added
 
 - Linting.
+
+## [1.5.0] - 2020-01-24
+
+### Fixed
+
+- Data update with lazy loading.

@@ -1,6 +1,6 @@
 {
   "name": "@true-directive/base",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "The set of base classes for the TrueDirective Grid",
   "main": "./bundles/true-directive-base.umd.js",
   "scripts": {
@@ -30,13 +30,13 @@
     "@types/node": "^8.0.53",
     "ajv": "^6.10.0",
     "awesome-typescript-loader": "^5.2.1",
-    "copy-webpack-plugin": "^5.1.1",
+    "copy-webpack-plugin": "^7.0.0",
     "istanbul-instrumenter-loader": "^3.0.0",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
-    "karma": "^4.4.1",
+    "karma": "^6.0.1",
     "karma-chrome-launcher": "~2.2.0",
-    "karma-coverage": "^1.1.1",
+    "karma-coverage": "^2.0.3",
     "karma-coverage-istanbul-reporter": "~2.0.1",
     "karma-coveralls": "^2.1.0",
     "karma-firefox-launcher": "^1.0.1",
@@ -54,7 +54,7 @@
     "typescript": "3.2.2",
     "uglifyjs-webpack-plugin": "^2.1.2",
     "webpack": "^4.0.0",
-    "webpack-cli": "^3.3.0"
+    "webpack-cli": "^4.4.0"
   },
   "dependencies": {}
 }

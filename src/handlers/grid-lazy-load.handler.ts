@@ -11,7 +11,6 @@ import { GridSettings } from '../classes/grid-settings.class';
 import { DataSource } from '../classes/data-source.class';
 
 import { IEvents } from '../events.interface';
-import { isLoweredSymbol } from '@angular/compiler';
 
 export class GridLazyLoadHandler {
 
