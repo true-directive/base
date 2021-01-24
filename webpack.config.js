@@ -60,9 +60,11 @@ const config =
       }]
   },
   plugins: [
-    new CopyWebpackPlugin([
+    new CopyWebpackPlugin({
+      patterns: [
         { from: 'package.json', to: PATHS.dist}
-    ])
+      ]
+    })
   ]
 }
 
